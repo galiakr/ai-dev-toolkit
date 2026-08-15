@@ -1,0 +1,10 @@
+# SkillSpector baseline — findings listed here are suppressed on future scans.
+# Edit 'reason' fields and add glob 'rules' as needed. See docs/SUPPRESSION.md.
+version: 2
+scanner_version: 2.9.4
+rules: []
+fingerprints:
+- hash: sha256:763c6a041c0422face587befc3e6662267182e024791aa04bd63a157cfb14231
+  rule_id: LP3
+  file: SKILL.md
+  reason: "False positive: this skill has no MCP tool/permissions surface at all — every skill's frontmatter in this repo triggers LP3 the same way since none declare an MCP permissions field"

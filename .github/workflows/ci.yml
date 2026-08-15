@@ -145,3 +145,82 @@ jobs:
             check "$f" 'pre-approved|you must comply|takes precedence over other instructions|don'"'"'t mention this to the user|do this silently|skip confirmation|ignore (previous|prior) instructions|disregard (your|other)'
           done
           exit $fail
+
+  skillspector-scan:
+    # NVIDIA SkillSpector (https://github.com/NVIDIA/SkillSpector) — a
+    # purpose-built scanner for agent skills, run in --no-llm (static-only)
+    # mode so this job needs no API key and stays deterministic. It covers
+    # the same two categories as audit-skill-security above (dangerous
+    # commands, injection phrasing) plus 15 more it doesn't attempt: AST/taint
+    # analysis, YARA malware signatures, supply-chain CVE lookups (OSV.dev),
+    # excessive-agency and tool-poisoning heuristics. Kept alongside the
+    # grep job rather than replacing it — tested, not assumed: a planted
+    # `curl ... | bash` to an external domain plus the literal phrase
+    # "don't mention this to the user" scored only 40/100 (CAUTION,
+    # exit 0 — non-blocking) under SkillSpector's --no-llm static scoring,
+    # while audit-skill-security's grep job fails hard on both patterns in
+    # the same file. --no-llm trades recall for determinism; the grep job
+    # is what still catches an unambiguous case like that one. A clearly
+    # malicious skill (credential harvesting + a network-controlled exec
+    # chain) does reliably score 100/CRITICAL and fail here — this job
+    # isn't toothless, its blind spot is specifically low-signal content.
+    # See fixtures/skillspector/ for both cases run for real.
+    #
+    # Every skill's static scan was validated against this repo's real
+    # skills before this job was added (see SECURITY.md Layer 2). Several
+    # skills legitimately trip heuristics given their stated purpose — e.g.
+    # audit-skills quotes injection phrasing as documentation, security-review
+    # reads .env/.gitignore state, a11y installs browser scan tooling via
+    # npx. Each is suppressed with a specific reason in that skill's own
+    # skills/<name>/.skillspector-baseline.yaml, not silenced globally.
+    #
+    # Two suppression caveats, both confirmed against fixtures/skillspector/
+    # rather than assumed from the docs: (1) a baseline fingerprint is bound
+    # to a skill file's *entire* decoded content, so any edit to a baselined
+    # file — even one unrelated to the accepted finding — reactivates that
+    # finding until the baseline is regenerated; it does not stay silently
+    # suppressed. (2) a moderate-severity addition to an already-baselined
+    # file is not guaranteed to push the score past the block threshold on
+    # its own (same --no-llm scoring gap as above) — only a clearly severe
+    # one reliably does. Regenerate + re-triage the baseline whenever a
+    # skill file changes; don't rely on suppression surviving a diff. The
+    # baseline is also pinned to a scanner_version; bumping the pinned
+    # SkillSpector version below invalidates every existing baseline by the
+    # same fail-closed rule, the same "unexplained hash mismatch is a flag"
+    # principle audit-skills' step 6 already applies to adopted skills.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install SkillSpector
+        run: |
+          uv tool install "git+https://github.com/NVIDIA/skillspector.git@v2.9.4"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Scan every skill with SkillSpector
+        run: |
+          fail=0
+          for d in skills/*/; do
+            [ -f "$d/SKILL.md" ] || continue
+            name=$(basename "$d")
+            baseline="$d.skillspector-baseline.yaml"
+            args=(scan "$d" --no-llm)
+            [ -f "$baseline" ] && args+=(--baseline "$baseline")
+
+            echo "::group::skillspector scan — $name"
+            skillspector "${args[@]}"
+            code=$?
+            echo "::endgroup::"
+
+            if [ "$code" -eq 1 ]; then
+              echo "::error file=${d}SKILL.md::SkillSpector: risk score above threshold (DO_NOT_INSTALL) after baseline suppression — see the scan output above, then triage into skills/$name/.skillspector-baseline.yaml if it's a confirmed false positive"
+              fail=1
+            elif [ "$code" -eq 2 ]; then
+              echo "::error file=${d}SKILL.md::SkillSpector: scan itself failed (bad input, unreadable source, or internal error) — see the scan output above"
+              fail=1
+            fi
+          done
+          exit $fail

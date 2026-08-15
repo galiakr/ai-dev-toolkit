@@ -1,0 +1,14 @@
+# SkillSpector baseline — findings listed here are suppressed on future scans.
+# Edit 'reason' fields and add glob 'rules' as needed. See docs/SUPPRESSION.md.
+version: 2
+scanner_version: 2.9.4
+rules: []
+fingerprints:
+- hash: sha256:53e63be263ed0e3bf305739498decd95afdb65008d5d54050ac2b5ced683dff3
+  rule_id: PE3
+  file: SKILL.md
+  reason: "False positive: git log -- .env checks whether .env was ever committed before being gitignored — the skill's stated .env/.gitignore hygiene step (6), not credential exfiltration"
+- hash: sha256:f184f8deff1f73e8c4c1b5b6e18eb56c2e732c12ce01e60240d567e3a7fd50d6
+  rule_id: PE3
+  file: SKILL.md
+  reason: "False positive: same .env hygiene check — recommending gitleaks/trufflehog commands to confirm no secret was ever committed, in-scope for a security-review skill"

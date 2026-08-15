@@ -1,0 +1,94 @@
+# Optional, advanced template — NOT copied by scripts/bootstrap.sh by
+# default. Copy to `.github/workflows/skillspector-scan.yml` if this
+# project has adopted this playbook's `.claude/skills/` (bootstrap.sh
+# copies every skill folder there by default — see step 8 in its printed
+# manual-steps list) and you want the same real, tool-based skill-security
+# scan this playbook's own repo runs on itself, not just the mechanical
+# grep patterns in `.github/workflows/ci.yml`'s own template job.
+#
+# Optional rather than copied by default for one reason: weight, not
+# doubt about whether it's worth it. This needs `uv`, a Python 3.12
+# runtime, and a multi-minute `uv tool install` of NVIDIA SkillSpector
+# (https://github.com/NVIDIA/SkillSpector) — a real dependency-install
+# step with its own failure modes (network, a broken upstream release),
+# unlike `prompt-injection-guard.yml`/`llm-review.yml` in this same
+# folder, which need nothing heavier than `curl` and GitHub Actions'
+# built-ins. A project with only a handful of trusted, self-authored
+# skills may reasonably decide the mechanical grep pattern already in
+# `ci.yml` is enough; a project accepting skills from outside contributors
+# or third-party sources gets real, disproportionate value from this —
+# AST/taint analysis, YARA malware signatures, and live CVE lookups the
+# grep pattern structurally cannot attempt.
+#
+# Two things confirmed by running this playbook's own version of this job
+# against real and deliberately-planted skills (see
+# `fixtures/skillspector/` in this playbook's repo):
+#
+# 1. `--no-llm` static scoring has a real recall gap on low-signal
+#    content — a single ambiguous bad line (an unrelated `curl | bash`
+#    plus a concealment phrase) can score under the DO_NOT_INSTALL
+#    threshold and NOT fail this job on its own. Run this alongside, not
+#    instead of, `ci.yml`'s mechanical `audit-skill-security`-style
+#    pattern check if you have one — a plain grep match has no threshold
+#    to slip under. A clearly malicious skill (credential harvesting, a
+#    network-controlled exec chain) does reliably score CRITICAL and does
+#    fail here.
+# 2. A `.skillspector-baseline.yaml` fingerprint (used to suppress a known
+#    false positive per skill) binds a skill's *entire* file content, not
+#    just the flagged line — editing anywhere in an already-baselined
+#    `SKILL.md` reactivates the suppressed finding too, until the
+#    baseline is regenerated. Regenerate and re-triage a skill's baseline
+#    whenever that skill's file changes at all, not only when the change
+#    looks dangerous.
+
+name: SkillSpector Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  skillspector-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install SkillSpector
+        run: |
+          # Pin this the same way this playbook's own CI does — a version
+          # bump invalidates every existing .skillspector-baseline.yaml by
+          # design (see the header above and SECURITY.md's
+          # skillspector-scan section in this playbook's repo), so bump it
+          # deliberately, not as a side effect of an unrelated change.
+          uv tool install "git+https://github.com/NVIDIA/skillspector.git@v2.9.4"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Scan every skill with SkillSpector
+        run: |
+          fail=0
+          for d in .claude/skills/*/; do
+            [ -f "$d/SKILL.md" ] || continue
+            name=$(basename "$d")
+            baseline="$d.skillspector-baseline.yaml"
+            args=(scan "$d" --no-llm)
+            [ -f "$baseline" ] && args+=(--baseline "$baseline")
+
+            echo "::group::skillspector scan — $name"
+            skillspector "${args[@]}"
+            code=$?
+            echo "::endgroup::"
+
+            if [ "$code" -eq 1 ]; then
+              echo "::error file=${d}SKILL.md::SkillSpector: risk score above threshold (DO_NOT_INSTALL) after baseline suppression — see the scan output above, then triage into .claude/skills/$name/.skillspector-baseline.yaml if it's a confirmed false positive"
+              fail=1
+            elif [ "$code" -eq 2 ]; then
+              echo "::error file=${d}SKILL.md::SkillSpector: scan itself failed (bad input, unreadable source, or internal error) — see the scan output above"
+              fail=1
+            fi
+          done
+          exit $fail

@@ -1,0 +1,10 @@
+# SkillSpector baseline — findings listed here are suppressed on future scans.
+# Edit 'reason' fields and add glob 'rules' as needed. See docs/SUPPRESSION.md.
+version: 2
+scanner_version: 2.9.4
+rules: []
+fingerprints:
+- hash: sha256:69a1466f81835ed8598faab41a2ef39d07fff98cedc6855ade10e4483f59201e
+  rule_id: PE3
+  file: SKILL.md
+  reason: "False positive: reading DEV_TLS_CERT_PATH/DEV_TLS_KEY_PATH from .env is exactly this skill's stated purpose (verifying local dev TLS setup), not a credential-exfiltration attempt"

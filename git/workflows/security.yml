@@ -1,6 +1,6 @@
 # Copy to `.github/workflows/security.yml`.
 # Enforces the "never commit secrets" and "keep deps patched" rules stated in
-# AGENTS.md — previously just a convention, not a check.
+# AGENTS.md.
 
 name: Security
 
@@ -10,7 +10,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    - cron: "0 6 * * 1"   # weekly Monday 6am, catches newly-disclosed CVEs in existing deps
+    - cron: '0 6 * * 1' # weekly Monday 6am, catches newly-disclosed CVEs in existing deps
 
 jobs:
   secret-scan:
@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # full history so gitleaks can scan past commits on PRs
+          fetch-depth: 0 # full history so gitleaks can scan past commits on PRs
 
       - name: Scan for committed secrets
         uses: gitleaks/gitleaks-action@v2

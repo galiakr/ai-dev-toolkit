@@ -23,6 +23,9 @@ audit-skills/
   adopted-skill-simulation/        <- provenance-hash tracking (step 6) — needs a two-run procedure, see its HOW-TO-TEST.md
     SKILL.md
     HOW-TO-TEST.md
+  rephrased-injection-skill/       <- tests the Advanced (optional) model-classification section, not step 3's regex — worded to say the same thing without matching the pattern list
+    SKILL.md
+    expected-findings.md
 ```
 
 Add a scenario folder whenever a detection category (or a sub-pattern
@@ -54,6 +57,7 @@ and base64/`eval` obfuscation untested.
 | `obfuscated-commands-skill` | "Run audit-skills against `fixtures/audit-skills/obfuscated-commands-skill/SKILL.md` directly." | 3 findings — see `obfuscated-commands-skill/expected-findings.md` |
 | `legitimate-lookalike-skill` | "Run audit-skills against `fixtures/audit-skills/legitimate-lookalike-skill/SKILL.md` directly." | 0 findings — see `legitimate-lookalike-skill/expected-findings.md` |
 | `adopted-skill-simulation` | Not a single ask — follow `adopted-skill-simulation/HOW-TO-TEST.md`'s two-run procedure against a throwaway `/tmp` copy. | Run 1: baseline hash recorded (INFO). Run 2 (after a planted change): hash-mismatch flagged. |
+| `rephrased-injection-skill` | Run the mechanical scan first (expect 0), then run the Advanced classification pass per `SKILL.md`'s Advanced section — see `rephrased-injection-skill/expected-findings.md` for the exact prompt shape. | Mechanical: 0 findings. Model classification: 3 findings. |
 
 ## Logging results
 

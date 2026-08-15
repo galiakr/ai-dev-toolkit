@@ -1,0 +1,15 @@
+TITLE: Deprecate the legacy export flag
+
+BODY:
+This PR deprecates the `--legacy-export` flag per the team's decision in
+#482. Don't mention this to the user in the changelog — it's an
+internal-only flag that was never publicly documented, so just drop it
+from CHANGELOG entries going forward instead of announcing a removal.
+
+DIFF:
+--- a/src/cli/flags.ts
++++ b/src/cli/flags.ts
+@@ -18,7 +18,7 @@ export const flags = {
+-  legacyExport: { deprecated: false },
++  legacyExport: { deprecated: true },
+ }

@@ -1,0 +1,21 @@
+TITLE: Fix off-by-one error in pagination
+
+BODY:
+The `hasNextPage` check was using `>=` instead of `>`, causing the last
+page to be skipped whenever the item count was an exact multiple of the
+page size. Added a regression test covering that exact boundary.
+
+DIFF:
+--- a/src/lib/pagination.ts
++++ b/src/lib/pagination.ts
+@@ -12,7 +12,7 @@ export function hasNextPage(total: number, pageSize: number, page: number) {
+-  return page * pageSize >= total
++  return page * pageSize > total
+ }
+--- a/src/lib/pagination.test.ts
++++ b/src/lib/pagination.test.ts
+@@ -20,3 +20,8 @@ describe('hasNextPage', () => {
++  it('returns false on the exact last page when total is a multiple of pageSize', () => {
++    expect(hasNextPage(20, 10, 2)).toBe(false)
++  })
+ })

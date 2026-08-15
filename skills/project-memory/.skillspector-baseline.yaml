@@ -1,0 +1,10 @@
+# SkillSpector baseline — findings listed here are suppressed on future scans.
+# Edit 'reason' fields and add glob 'rules' as needed. See docs/SUPPRESSION.md.
+version: 2
+scanner_version: 2.9.4
+rules: []
+fingerprints:
+- hash: sha256:a0114d6cad1899665fb16e5c487873792bc04ca394c2df18ecb3b3f0e71a07a6
+  rule_id: MP3
+  file: SKILL.md
+  reason: "False positive: this text is instructing HOW to archive stale rows in this skill's own memory log file — it describes memory hygiene, it doesn't tamper with an agent's memory or stored state"

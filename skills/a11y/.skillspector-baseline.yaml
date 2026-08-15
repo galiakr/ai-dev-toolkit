@@ -1,0 +1,22 @@
+# SkillSpector baseline — findings listed here are suppressed on future scans.
+# Edit 'reason' fields and add glob 'rules' as needed. See docs/SUPPRESSION.md.
+version: 2
+scanner_version: 2.9.4
+rules: []
+fingerprints:
+- hash: sha256:773a37241b64c15c616a4fac27865faeddd28114588d761672b0229b0c922421
+  rule_id: RP1
+  file: SKILL.md
+  reason: "False positive: npx --yes browser-driver-manager install chrome — installs a11y browser tooling the skill's own stated purpose requires, no MCP server involved"
+- hash: sha256:9b4b3391489c56505b2dedf58e6896962484a7533047918b98427b7307439050
+  rule_id: RP1
+  file: SKILL.md
+  reason: "False positive: npx --yes @axe-core/cli --version — checks for the primary a11y scan tool, same as above"
+- hash: sha256:d5558ed15b2888964a86d501147e4deaba0b14aad51e4adffee3a7d6bd9b0ada
+  rule_id: RP1
+  file: SKILL.md
+  reason: "False positive: npx --yes pa11y --version — fallback a11y scan tool if axe fails, same as above"
+- hash: sha256:6edfd05185c62d123a19138d9f8cb2e2320c4907fcdcf2587f90601e1db71d70
+  rule_id: EA1
+  file: SKILL.md
+  reason: "False positive: flagged line is the '## Output Format' template's sample report header, not an instruction granting autonomous tool access"

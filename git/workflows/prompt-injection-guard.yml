@@ -1,0 +1,97 @@
+# Optional, advanced template — NOT copied by scripts/bootstrap.sh by
+# default. Copy to `.github/workflows/prompt-injection-guard.yml` if this
+# project has anything AI-driven that reads PR content: an AI code-review
+# bot, an LLM-as-judge merge gate (see llm-review.yml in this same
+# folder), or a Claude/Copilot session a maintainer routinely points at
+# open PRs. That's the actual attack surface this guards — a PR body or
+# diff trying to talk an AI reader into doing something it shouldn't. A
+# project where no AI ever reads PR text has nothing here to protect.
+#
+# Default behavior is flag-for-review, never auto-block. A false positive
+# costs a real contributor, and this template ships no appeals process —
+# see the bottom of this file if you want a stricter, opt-in escalation.
+
+name: Prompt Injection Guard
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  scan-pr-content:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan PR title, body, and diff for injection-style phrasing
+        id: scan
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Keep this pattern in sync with skills/audit-skills/SKILL.md
+          # step 3 and .github/workflows/ci.yml's audit-skill-security job
+          # — same phrasing, same reasoning: language aimed at whoever
+          # reads this PR (a human OR an AI reviewer), not language
+          # actually addressed to the project's maintainers.
+          PATTERN='pre-approved|you must comply|takes precedence over other instructions|don'"'"'t mention this to the user|do this silently|skip confirmation|ignore (previous|prior) instructions|disregard (your|other)'
+
+          printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" > /tmp/pr-content.txt
+          git diff "$BASE_SHA" "$HEAD_SHA" >> /tmp/pr-content.txt
+
+          matches=$(grep -niE "$PATTERN" /tmp/pr-content.txt || true)
+
+          if [ -n "$matches" ]; then
+            echo "$matches" > /tmp/matches.txt
+            echo "flagged=true" >> "$GITHUB_OUTPUT"
+            echo "Possible injection-style phrasing found:"
+            cat /tmp/matches.txt
+          else
+            echo "flagged=false" >> "$GITHUB_OUTPUT"
+            echo "No injection-style phrasing found."
+          fi
+
+      - name: Label and comment for human review (non-blocking)
+        if: steps.scan.outputs.flagged == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const matches = fs.readFileSync('/tmp/matches.txt', 'utf8');
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-review: possible-injection-pattern'],
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `This PR's title, description, or diff contains phrasing that pattern-matches known prompt-injection styles (language aimed at an AI reader rather than a human maintainer). This is very likely a false positive — flagging for a human to glance at, not blocking anything.\n\n<details><summary>Matched lines</summary>\n\n\`\`\`\n${matches}\n\`\`\`\n</details>`,
+            });
+
+# --- Optional, stricter escalation (NOT enabled by default) ---
+#
+# If your project sees real, repeated abuse (not a one-off false
+# positive) and you've decided the tradeoff is worth it, you could extend
+# the github-script step above to check the PR author against a
+# blocklist file (e.g. `.github/blocked-authors.txt`) and close the PR
+# immediately for listed authors, or auto-append an author to that list
+# after N flagged PRs from the same account.
+#
+# Weigh this honestly before adding it: a legitimate sentence like "don't
+# mention the deprecated flag in the changelog" matches this regex and
+# would false-positive. Banning a real contributor over that has a real
+# cost, and this template ships no appeals process. A human glancing at
+# the label above costs almost nothing by comparison — only escalate past
+# flag-for-review if you have actual evidence of repeated abuse, not just
+# the theoretical risk.

@@ -173,3 +173,65 @@ shellcheck, and the README accurately describes what's in the repo. CI
       `sync-context`), each actually run for real rather than reasoned
       about — two real gaps in `security-review/SKILL.md` were found this
       way and fixed (see `fixtures/security-review/README.md`).
+- [x] Added four optional/advanced AI-security additions to the
+      *template* (not to this repo's own operational config — none are
+      wired up here, since this repo has no live LLM-facing feature and
+      no branch protection to attach a required check to): a model-
+      classification step in `audit-skills` for rephrased injection
+      attempts the regex scan misses, `ai/guardrails.md` for runtime
+      protection on projects that do expose an LLM to end users, and two
+      opt-in GitHub Actions templates — `git/workflows/prompt-injection-guard.yml`
+      (flags, never blocks) and `git/workflows/llm-review.yml` (non-blocking
+      LLM second opinion by default). All validated by extracting and
+      running the actual shell logic against sample data, not just read
+      for plausibility — see each file's own header comments for scope
+      and when a project should actually reach for it.
+- [x] Fixtures added for all three of the above that have testable
+      logic (`audit-skills`' Advanced classification step, and both new
+      workflow templates — `ai/guardrails.md` is a pure reference doc
+      with nothing to fixture). Building `fixtures/llm-review/`'s fixture
+      caught a real bug in `git/workflows/llm-review.yml` before it ever
+      ran for real: `echo "$RESPONSE" | jq` silently corrupted valid JSON
+      containing escaped newlines (this shell's `echo` converts a literal
+      `\n` into an actual newline byte), which would have broken parsing
+      on almost any real multi-paragraph model response. Fixed by having
+      `curl` write to a file and every downstream step read that file
+      directly — see `fixtures/llm-review/README.md`. The
+      `rephrased-injection-skill` fixture also proved the model-
+      classification technique for real: a fresh, blind subagent caught
+      all 3 planted lines that a verified-clean regex scan found nothing
+      in.
+- [x] Wired NVIDIA SkillSpector (a purpose-built agent-skill security
+      scanner, 69 patterns/17 categories — AST/taint analysis, YARA
+      signatures, OSV.dev CVE lookups, tool-poisoning/excessive-agency
+      heuristics) into this repo's own CI as a new `skillspector-scan`
+      job, `--no-llm` static-only so it needs no API key. Kept alongside
+      `audit-skill-security` rather than replacing it, and this one was
+      tested rather than assumed: a planted skill with an obvious
+      `curl | bash` plus "don't mention this to the user" scored only
+      40/100 (CAUTION, exit 0, non-blocking) under SkillSpector's
+      `--no-llm` scoring — the grep job fails hard on that same file, on
+      both patterns, no threshold involved. A clearly malicious skill
+      (credential harvesting + a network-controlled exec chain) reliably
+      scored 100/CRITICAL and did fail, so the gap is specifically
+      low-signal content, not the job being toothless. Validated against
+      every real skill before landing: 5 of 9 skills tripped real
+      (false-positive) findings — `audit-skills` for quoting injection
+      phrasing as documentation (same reason it's already excluded from
+      the grep job), `security-review` for its own `.env` hygiene check,
+      `a11y` for `npx`-installing scan tooling, `project-memory` for
+      describing its own memory-log archiving, `language-tokens` for a
+      permissions heuristic every skill here trips (none declare an MCP
+      permissions field). Each is suppressed with a specific written
+      reason in that skill's own `.skillspector-baseline.yaml`, not a
+      blanket exclusion. Two caveats found by testing the suppression
+      mechanism itself, not just the detections: a baseline fingerprint
+      binds a skill's *entire* file content, so any edit to a baselined
+      `SKILL.md` reactivates its suppressed finding too, not just new
+      content; and a moderate-severity addition to an already-baselined
+      file isn't guaranteed to cross the block threshold on its own
+      (same scoring gap as above) — only a clearly severe one reliably
+      does. Regenerate and re-triage a baseline whenever its skill file
+      changes at all. Fixtures built and re-run for all of this at
+      `fixtures/skillspector/` — see `SECURITY.md`'s `skillspector-scan`
+      section for the full rationale.

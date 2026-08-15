@@ -1,0 +1,13 @@
+{
+  "id": "msg_fixture_concerns",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-5",
+  "content": [
+    {
+      "type": "text",
+      "text": "The new caching layer looks correct for the happy path, but there's no cache invalidation on write — a stale value could be served indefinitely after an update. Not a security issue, but likely a real bug once this sees traffic.\n\nVERDICT: CONCERNS"
+    }
+  ],
+  "stop_reason": "end_turn"
+}

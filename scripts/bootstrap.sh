@@ -66,6 +66,11 @@ for skill in "$SRC_DIR"/skills/*/; do
   name=$(basename "$skill")
   rm -rf "$DEST/.claude/skills/$name"
   cp -R "$skill" "$DEST/.claude/skills/$name"
+  # .skillspector-baseline.yaml is only meaningful alongside the optional
+  # git/workflows/skillspector-scan.yml template (step 8 below) — not
+  # copied by default, so don't ship its baseline files as unexplained
+  # clutter to every project that never adopts it either.
+  rm -f "$DEST/.claude/skills/$name/.skillspector-baseline.yaml"
 done
 
 echo ""
@@ -76,3 +81,12 @@ echo "  3. npx husky init, then add pre-commit/pre-push hooks per git/hooks/READ
 echo "  4. Follow testing/setup.md to install Vitest + RTL + Playwright"
 echo "  5. Fill in real values locally in .env (never commit it) — .env.example stays as placeholders"
 echo "  6. Update LICENSE copyright line if the author differs"
+echo "  7. Optional, advanced: if this project accepts outside PRs or has anything AI-driven"
+echo "     reading PR content, see git/workflows/prompt-injection-guard.yml and llm-review.yml"
+echo "     (not copied automatically). If it exposes an LLM to end users, see ai/guardrails.md."
+echo "  8. Optional, advanced: your .claude/skills/ folder was just copied from this repo's own"
+echo "     skills — if you'll adopt skills from outside contributors or third-party sources, see"
+echo "     git/workflows/skillspector-scan.yml (not copied automatically) for a real, tool-based"
+echo "     skill-security scan beyond ci.yml's mechanical grep pattern check. Its known-false-positive"
+echo "     baselines weren't copied either (see skills/*/.skillspector-baseline.yaml in this repo) —"
+echo "     copy the ones for skills you kept, or run 'skillspector baseline' fresh for your own."

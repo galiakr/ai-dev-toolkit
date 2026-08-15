@@ -71,6 +71,10 @@ src/
 - Validate and sanitize all external input
 - Never log tokens, passwords, or PII
 - All secrets via environment variables — documented in `.env.example`
+- If this project exposes an LLM to end users (chat, an AI-assisted
+  feature, an agent that acts on user requests), see `ai/guardrails.md`
+  for runtime protection against prompt injection — this list covers
+  general app security, not that specific risk
 
 ## Git hygiene
 
