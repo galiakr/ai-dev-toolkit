@@ -2,6 +2,22 @@
 
 A personal set of standards, skills, and templates for building AI-ready projects.
 
+## Try it with one prompt
+
+Paste this into Claude Code, Cursor, or any AI assistant with terminal access, from inside your project:
+
+```
+Look at https://github.com/galiakr/ai-dev-toolkit — a personal set of
+standards, skills, and templates for building AI-ready projects
+(AGENTS.md context files, Claude skills, CI/security workflows, git
+hooks). Clone it somewhere temporary, read its README.md and AGENTS.md
+to understand what it does and why, then run its scripts/bootstrap.sh
+against this project to scaffold the same setup here — adapting
+anything stack-specific (the testing setup, the language-tokens skill,
+etc.) to what this project actually uses. Ask me before overwriting
+anything that already exists here.
+```
+
 ## What this actually is
 
 It all started as an accident and became a deliberate practice. I ran this toolkit's `review-tests` skill against a real project's test suite and it reported the coverage gate passing at 100%. Run again with coverage enabled, it caught that the coverage tool was only measuring 1 of 12 source files. The fix went into `review-tests` itself, not just that one project, and it's live in this repo. That was luck, in the sense that nobody planned to find it.
