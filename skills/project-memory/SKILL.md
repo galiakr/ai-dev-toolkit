@@ -12,8 +12,7 @@ nothing else in the toolkit catches either one:
    Someone ships a fix and forgets to check the box, or a line describes a
    plan that changed (a project that said "deploy to Vercel" but shipped to
    GitHub Pages instead, with a live link already in the README, and the
-   line just never got removed). This isn't hypothetical — it's exactly
-   what happened in 8queens' own `AGENTS.md` before this skill existed.
+   line just never got removed).
 2. **`metrics/findings-log.md` only ever grows.** A project six months in
    has a long table where resolved findings sit next to open ones with no
    distinction, and the log stops being something anyone reads closely.
@@ -33,7 +32,7 @@ trusting the checkbox:
 - "Add husky hooks" — check for `.husky/pre-commit` and `.husky/pre-push`.
 - "Deploy to X" — check the README for a live link, `package.json`'s
   `homepage` field, or a deploy workflow (`.github/workflows/*.yml`
-  mentioning `pages`, `vercel`, `netlify`) targeting a *different* platform
+  mentioning `pages`, `vercel`, `netlify`) targeting a _different_ platform
   than the checklist item names. A live link to platform A sitting next to
   an unchecked "deploy to platform B" item is the stale-item pattern to
   catch specifically.
@@ -85,15 +84,15 @@ checklist items were flagged stale and how many log rows were archived.
 
 ### AGENTS.md checklist
 
-| Item | Status | Evidence |
-|------|--------|----------|
-| Deploy to Vercel | **Stale — already done differently** | Live link in README points to GitHub Pages; `.github/workflows/deploy.yml` deploys to `gh-pages`, not Vercel |
-| Add screenshot/GIF to README | Still accurate | No image found in README |
+| Item                         | Status                               | Evidence                                                                                                     |
+| ---------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Deploy to Vercel             | **Stale — already done differently** | Live link in README points to GitHub Pages; `.github/workflows/deploy.yml` deploys to `gh-pages`, not Vercel |
+| Add screenshot/GIF to README | Still accurate                       | No image found in README                                                                                     |
 
 ### Findings log archive candidates
 
-| Row | Reason |
-|-----|--------|
+| Row                                                  | Reason                                               |
+| ---------------------------------------------------- | ---------------------------------------------------- |
 | 2026-07-13 — review-tests — 4 gaps in solver.test.ts | Issue tracking these gaps' underlying bugs is closed |
 
 **Recommendation:** [one line — e.g. "Remove the stale Vercel line, archive 1 row."]

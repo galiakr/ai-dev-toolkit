@@ -2,11 +2,8 @@
 
 Deliberately broken examples for testing whether this toolkit's own
 skills actually catch what they claim to catch — not application code, not
-a template for other projects. This is the missing piece the rest of the
-repo doesn't have: `review-tests` catching the 8queens coverage lie was
-real evidence it works, but it happened by accident, on someone else's
-project. Fixtures make that kind of proof repeatable and deliberate,
-instead of waiting for the next accident.
+a template for other projects. Fixtures make that kind of proof repeatable and deliberate,
+instead of waiting for an accident.
 
 **This directory is excluded from the repo's own automated scans.** It
 lives outside `skills/`, so `.github/workflows/ci.yml`'s
@@ -42,26 +39,26 @@ findings log, one level up.
 
 ### Claude skills
 
-| Skill | What's planted |
-|-------|-----------------|
-| `audit-skills` | A fake skill with one issue per detection category: injection phrasing, an unexplained `curl`, a `.env` read that contradicts its stated purpose, a write outside the project dir. A second fixture (`rephrased-injection-skill`) tests the Advanced model-classification section specifically, worded to evade the regex while saying the same thing. |
-| `review-tests` | A coverage config that silently excludes half the source tree, plus tests with a tautological assertion, a wrong expected value, and a missing edge case |
-| `project-memory` | An `AGENTS.md` checklist item that doesn't match reality, plus a findings-log row that should get archived |
-| `sync-context` | An `AGENTS.md`/`copilot-instructions.md` pair where one file states a rule the other silently omits and then contradicts |
-| `security-review` | A cookie-auth route with a real CSRF gap, a bearer-token route that looks the same but isn't (false-positive check), unsanitized rendering, and a hardcoded credential |
-| `a11y` | Missing alt text, an unlabeled input, and low-contrast text, each paired with a correctly-marked-up equivalent (false-positive check) |
+| Skill             | What's planted                                                                                                                                                                                                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `audit-skills`    | A fake skill with one issue per detection category: injection phrasing, an unexplained `curl`, a `.env` read that contradicts its stated purpose, a write outside the project dir. A second fixture (`rephrased-injection-skill`) tests the Advanced model-classification section specifically, worded to evade the regex while saying the same thing. |
+| `review-tests`    | A coverage config that silently excludes half the source tree, plus tests with a tautological assertion, a wrong expected value, and a missing edge case                                                                                                                                                                                               |
+| `project-memory`  | An `AGENTS.md` checklist item that doesn't match reality, plus a findings-log row that should get archived                                                                                                                                                                                                                                             |
+| `sync-context`    | An `AGENTS.md`/`copilot-instructions.md` pair where one file states a rule the other silently omits and then contradicts                                                                                                                                                                                                                               |
+| `security-review` | A cookie-auth route with a real CSRF gap, a bearer-token route that looks the same but isn't (false-positive check), unsanitized rendering, and a hardcoded credential                                                                                                                                                                                 |
+| `a11y`            | Missing alt text, an unlabeled input, and low-contrast text, each paired with a correctly-marked-up equivalent (false-positive check)                                                                                                                                                                                                                  |
 
 ### GitHub Actions templates (`git/workflows/`)
 
-| Template | What's planted |
-|----------|-----------------|
-| `prompt-injection-guard.yml` | Sample PR content: clean, an actual injection attempt, and a borderline legitimate PR that trips the filter anyway (demonstrating the workflow's documented false-positive tradeoff for real, not just claiming it) |
-| `llm-review.yml` | Canned API responses (approve / concerns / needs-human / API error) for the parsing and blocking-decision logic — building this fixture caught and fixed a real bug in the workflow itself, see `llm-review/README.md` |
+| Template                     | What's planted                                                                                                                                                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prompt-injection-guard.yml` | Sample PR content: clean, an actual injection attempt, and a borderline legitimate PR that trips the filter anyway (demonstrating the workflow's documented false-positive tradeoff for real, not just claiming it)    |
+| `llm-review.yml`             | Canned API responses (approve / concerns / needs-human / API error) for the parsing and blocking-decision logic — building this fixture caught and fixed a real bug in the workflow itself, see `llm-review/README.md` |
 
 ### This repo's own CI (`.github/workflows/ci.yml`)
 
-| Job | What's planted |
-|-----|-----------------|
+| Job                 | What's planted                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `skillspector-scan` | Three scenarios for NVIDIA SkillSpector, run `--no-llm`: a low-signal skill that stays under the DO_NOT_INSTALL threshold but still fails `audit-skill-security`'s grep job (the reason both jobs run), a clearly malicious skill that reliably scores CRITICAL and fails, and a baseline-suppression test proving a fingerprint binds a skill's whole file (not just the flagged line) and that suppression doesn't change the scoring-threshold gap — see `skillspector/README.md` |
 
 Any skill, workflow template, or CI job making a specific, checkable
@@ -73,7 +70,7 @@ claim is a candidate for the next one.
    command to run.
 2. Run the skill against the fixture.
 3. Compare the actual output against that fixture's `expected-findings.md`.
-4. If something expected didn't get caught — or something *not* expected
+4. If something expected didn't get caught — or something _not_ expected
    got flagged — that's a real bug in the skill, not a fixture problem.
    Fix the skill, not just this run.
 5. Append the result to that fixture's `results-log.md`.

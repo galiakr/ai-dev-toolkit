@@ -10,8 +10,7 @@ pile up.
 - `fixture-project/AGENTS.md` — "Current focus" checklist has an item
   marked "Deploy to Vercel" and checked off, but the repo's own
   `.github/workflows/deploy.yml` deploys to GitHub Pages, and there's no
-  Vercel config anywhere. The checklist claim doesn't match reality —
-  the same shape as the real stale line found in 8queens' own AGENTS.md.
+  Vercel config anywhere. The checklist claim doesn't match reality.
 - `fixture-project/.github/workflows/deploy.yml` — the actual deploy
   target, GitHub Pages, contradicting the AGENTS.md claim above.
 - `fixture-project/metrics/findings-log.md` — three rows: one tied to an

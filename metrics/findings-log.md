@@ -7,8 +7,7 @@ log should look like, not any specific project's actual results.
 
 The point of this file, once it's in a real project: turn "I think this
 skill helps" into "here's what it's actually found, across which projects,
-on which date." Without it, skills accumulate on faith the same way an
-8queens coverage gate once did — looking fine because nobody checked.
+on which date." Without it, skills accumulate on faith looking fine because nobody checked.
 
 **Rule:** every time a skill runs to completion, it adds one row — a clean
 result is logged exactly like a finding. A skill with ten clean runs and
@@ -20,8 +19,8 @@ step that does this automatically.
 ## Log
 
 | Date | Project | Skill | Outcome | Detail | Ref |
-|------|---------|-------|---------|--------|-----|
-| | | | | | |
+| ---- | ------- | ----- | ------- | ------ | --- |
+|      |         |       |         |        |     |
 
 ## How to add a row
 

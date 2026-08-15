@@ -11,10 +11,10 @@ doc is about what happens when they _run_.
 
 Everything below is one of two things:
 
-- **A mechanical check** — a fixed pattern (`grep`) or a real external
+- **A mechanical check**: a fixed pattern (`grep`) or a real external
   tool (`semgrep`, `gitleaks`, `npm audit`, `shellcheck`, `actionlint`).
   Fast, deterministic, cheap to run on every push.
-- **A judgment check** — something that has to read code or text and
+- **A judgment check**: something that has to read code or text and
   decide, because no fixed pattern can. Slower, needs a human or an LLM,
   mostly runs on demand rather than automatically.
 
@@ -25,7 +25,7 @@ shows up everywhere:
 `security-review` judges whether it's actually reachable at runtime.
 `gitleaks` finds a secret-shaped string,
 `security-review` judges whether it's a real, live credential or a placeholder.
-`audit-skills`' regex scan finds a phrase match, its Advanced section's model call judges whether a rephrased version means the same thing. Neither half is optional — a mechanical
+`audit-skills` regex scan finds a phrase match, its Advanced section's model call judges whether a rephrased version means the same thing. Neither half is optional — a mechanical
 check with no judgment on top either misses everything subtle or drowns
 you in false positives; judgment with no mechanical check underneath is
 slow and inconsistent for the things a fixed pattern would catch instantly.
@@ -240,7 +240,7 @@ Two suppression caveats — both confirmed against
 `fixtures/skillspector/baseline-suppression-skill/`, not assumed from the
 docs, because the first one is easy to get wrong:
 
-1. **A baseline fingerprint binds the *entire* decoded file, not just the
+1. **A baseline fingerprint binds the _entire_ decoded file, not just the
    finding's line.** Editing any part of an already-baselined
    `SKILL.md` — even something unrelated to the suppressed finding —
    reactivates that finding too, until the baseline is regenerated. It
@@ -250,7 +250,7 @@ docs, because the first one is easy to get wrong:
    part," which isn't what was observed.
 2. **Suppression doesn't make the score-threshold gap above go away.**
    A baselined file with one moderate-severity line added — reactivating
-   the original suppressed finding *and* adding a real new one — scored
+   the original suppressed finding _and_ adding a real new one — scored
    46/100, still CAUTION, still exit `0`. The same file with a clearly
    severe addition instead (the `strong-signal-skill` payload) scored
    100/CRITICAL and failed. A baseline changes what's already been
@@ -481,7 +481,7 @@ exists — a bug like this is invisible until something actually runs it.
 
 **Trigger (once copied into a project):** `push`/`pull_request` to
 `main` — the exact same triggers as this repo's own `skillspector-scan`
-CI job, because it *is* that same job, retargeted from `skills/*/` to
+CI job, because it _is_ that same job, retargeted from `skills/*/` to
 `.claude/skills/*/` (where `bootstrap.sh` actually copies skill folders
 in an adopting project) and given its own standalone `on:`/`permissions:`
 block the way `prompt-injection-guard.yml` and `llm-review.yml` already
@@ -491,7 +491,7 @@ are.
 other two templates above:** weight, not narrower applicability. Every
 project that runs `bootstrap.sh` gets `.claude/skills/*/SKILL.md` files
 by default (bootstrap.sh copies every skill folder), so this arguably
-applies *more* broadly than `prompt-injection-guard.yml`/`llm-review.yml`
+applies _more_ broadly than `prompt-injection-guard.yml`/`llm-review.yml`
 — it doesn't require the project to separately decide to accept outside
 PRs or wire up AI-driven review. What makes it optional instead is that
 it needs `uv`, a Python 3.12 runtime, and a multi-minute `uv tool install`
@@ -532,24 +532,24 @@ and repeatable, not luck.
 
 ## Full reference table
 
-| Thing                               | Type                      | Runs when                                  | Active in _this_ repo?                    | What it actually checks for                                                                                                                                                                                                     |
-| ----------------------------------- | ------------------------- | ------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.githooks/pre-commit`              | mechanical                | `git commit`, staged `SKILL.md` files only | yes, opt-in per clone                     | Dangerous command patterns and injection phrasing in files you're about to commit right now                                                                                                                                     |
-| `.githooks/pre-push`                | mechanical                | `git push`                                 | yes, opt-in per clone                     | Same, across _every_ skill file, plus orphan/doc-sync checks and shellcheck/actionlint/gitleaks if installed                                                                                                                    |
-| `secret-scan` (CI)                  | mechanical (`gitleaks`)   | every push/PR                              | yes                                       | Secrets already committed to this repo's git history                                                                                                                                                                            |
-| `validate-workflow-templates` (CI)  | mechanical (`actionlint`) | every push/PR                              | yes                                       | Syntax/logic errors in the `git/workflows/*.yml` templates before they're copied elsewhere                                                                                                                                      |
-| `validate-shell-scripts` (CI)       | mechanical (`shellcheck`) | every push/PR                              | yes                                       | Shell bugs in `scripts/bootstrap.sh`, the script every new project runs unattended                                                                                                                                              |
-| `validate-skills` (CI)              | mechanical                | every push/PR                              | yes                                       | Missing/malformed skill frontmatter, orphaned old-format files, skills undocumented in `README.md`                                                                                                                              |
-| `audit-skill-security` (CI)         | mechanical                | every push/PR                              | yes                                       | Dangerous command patterns + injection phrasing in every real skill, automatically, on every push                                                                                                                               |
-| `skillspector-scan` (CI)            | mechanical (real tool, `NVIDIA/SkillSpector`, `--no-llm`) | every push/PR | yes | 69 patterns across 17 categories per skill — AST/taint analysis, YARA malware signatures, supply-chain CVE lookups (OSV.dev), excessive agency/tool-poisoning heuristics; known false positives suppressed per-skill via `.skillspector-baseline.yaml`, new findings still fail the job |
-| `security-review` (skill)           | judgment + real tools     | on demand                                  | n/a — no app code lives here              | Unsafe rendering, auth/CSRF gaps, headers/CORS, exploitable `npm audit` findings, secrets in history _and_ the current tree, `.env` hygiene — in a _project's application code_                                                 |
-| `audit-skills` (skill)              | judgment + mechanical     | on demand                                  | yes                                       | Whether a `SKILL.md` should be trusted with tool access: dangerous commands, injection phrasing, description-vs-behavior mismatch, scope creep, provenance drift, plus model-classified manipulation a regex can't phrase-match |
-| `git/hooks/`, `git/workflows/*.yml` | template                  | —                                          | ships to adopting projects, not used here | Same categories as this repo's own hooks/CI, packaged to copy into a new project                                                                                                                                                |
-| `ai/guardrails.md`                  | reference doc             | —                                          | n/a — no LLM-facing feature here          | Not a check — guidance for runtime prompt-injection protection when a project _does_ expose an LLM to end users                                                                                                                 |
-| `prompt-injection-guard.yml`        | mechanical                | PR opened/edited/synced, template          | not wired up here                         | Injection-style phrasing in a PR's title/body/diff, aimed at whatever AI might read it                                                                                                                                          |
-| `llm-review.yml`                    | judgment (real LLM call)  | PR opened/synced/reopened, template        | not wired up here                         | A second-opinion code review verdict from Claude, explicitly treating the diff as untrusted data rather than instructions                                                                                                       |
-| `skillspector-scan.yml`             | mechanical (real tool, `NVIDIA/SkillSpector`, `--no-llm`) | push/PR to main, template | not wired up here | Same as `skillspector-scan` (CI) above, retargeted to `.claude/skills/*/` — the path `bootstrap.sh` actually copies skill folders into                                                                                          |
-| `fixtures/`                         | proof                     | run manually, re-verified this session     | yes                                       | Whether everything above still actually catches what it claims to — re-run against known-answer examples, not assumed                                                                                                           |
+| Thing                               | Type                                                      | Runs when                                  | Active in _this_ repo?                    | What it actually checks for                                                                                                                                                                                                                                                             |
+| ----------------------------------- | --------------------------------------------------------- | ------------------------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.githooks/pre-commit`              | mechanical                                                | `git commit`, staged `SKILL.md` files only | yes, opt-in per clone                     | Dangerous command patterns and injection phrasing in files you're about to commit right now                                                                                                                                                                                             |
+| `.githooks/pre-push`                | mechanical                                                | `git push`                                 | yes, opt-in per clone                     | Same, across _every_ skill file, plus orphan/doc-sync checks and shellcheck/actionlint/gitleaks if installed                                                                                                                                                                            |
+| `secret-scan` (CI)                  | mechanical (`gitleaks`)                                   | every push/PR                              | yes                                       | Secrets already committed to this repo's git history                                                                                                                                                                                                                                    |
+| `validate-workflow-templates` (CI)  | mechanical (`actionlint`)                                 | every push/PR                              | yes                                       | Syntax/logic errors in the `git/workflows/*.yml` templates before they're copied elsewhere                                                                                                                                                                                              |
+| `validate-shell-scripts` (CI)       | mechanical (`shellcheck`)                                 | every push/PR                              | yes                                       | Shell bugs in `scripts/bootstrap.sh`, the script every new project runs unattended                                                                                                                                                                                                      |
+| `validate-skills` (CI)              | mechanical                                                | every push/PR                              | yes                                       | Missing/malformed skill frontmatter, orphaned old-format files, skills undocumented in `README.md`                                                                                                                                                                                      |
+| `audit-skill-security` (CI)         | mechanical                                                | every push/PR                              | yes                                       | Dangerous command patterns + injection phrasing in every real skill, automatically, on every push                                                                                                                                                                                       |
+| `skillspector-scan` (CI)            | mechanical (real tool, `NVIDIA/SkillSpector`, `--no-llm`) | every push/PR                              | yes                                       | 69 patterns across 17 categories per skill — AST/taint analysis, YARA malware signatures, supply-chain CVE lookups (OSV.dev), excessive agency/tool-poisoning heuristics; known false positives suppressed per-skill via `.skillspector-baseline.yaml`, new findings still fail the job |
+| `security-review` (skill)           | judgment + real tools                                     | on demand                                  | n/a — no app code lives here              | Unsafe rendering, auth/CSRF gaps, headers/CORS, exploitable `npm audit` findings, secrets in history _and_ the current tree, `.env` hygiene — in a _project's application code_                                                                                                         |
+| `audit-skills` (skill)              | judgment + mechanical                                     | on demand                                  | yes                                       | Whether a `SKILL.md` should be trusted with tool access: dangerous commands, injection phrasing, description-vs-behavior mismatch, scope creep, provenance drift, plus model-classified manipulation a regex can't phrase-match                                                         |
+| `git/hooks/`, `git/workflows/*.yml` | template                                                  | —                                          | ships to adopting projects, not used here | Same categories as this repo's own hooks/CI, packaged to copy into a new project                                                                                                                                                                                                        |
+| `ai/guardrails.md`                  | reference doc                                             | —                                          | n/a — no LLM-facing feature here          | Not a check — guidance for runtime prompt-injection protection when a project _does_ expose an LLM to end users                                                                                                                                                                         |
+| `prompt-injection-guard.yml`        | mechanical                                                | PR opened/edited/synced, template          | not wired up here                         | Injection-style phrasing in a PR's title/body/diff, aimed at whatever AI might read it                                                                                                                                                                                                  |
+| `llm-review.yml`                    | judgment (real LLM call)                                  | PR opened/synced/reopened, template        | not wired up here                         | A second-opinion code review verdict from Claude, explicitly treating the diff as untrusted data rather than instructions                                                                                                                                                               |
+| `skillspector-scan.yml`             | mechanical (real tool, `NVIDIA/SkillSpector`, `--no-llm`) | push/PR to main, template                  | not wired up here                         | Same as `skillspector-scan` (CI) above, retargeted to `.claude/skills/*/` — the path `bootstrap.sh` actually copies skill folders into                                                                                                                                                  |
+| `fixtures/`                         | proof                                                     | run manually, re-verified this session     | yes                                       | Whether everything above still actually catches what it claims to — re-run against known-answer examples, not assumed                                                                                                                                                                   |
 
 ---
 

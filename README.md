@@ -22,7 +22,7 @@ anything that already exists here.
 
 It all started as an accident and became a deliberate practice. I ran this toolkit's `review-tests` skill against a real project's test suite and it reported the coverage gate passing at 100%. Run again with coverage enabled, it caught that the coverage tool was only measuring 1 of 12 source files. The fix went into `review-tests` itself, not just that one project, and it's live in this repo. That was luck, in the sense that nobody planned to find it.
 
-`fixtures/` is what happened once I stopped waiting for accidents. It's deliberately broken (and deliberately fine-looking) examples, built to verify a skill actually catches what it claims to catch instead of just trusting that it does because it sounds right. The coverage-lie catch proved the idea works by accident once. `fixtures/` is the same idea, on purpose, repeatable, and visible in the repo.
+`fixtures/` is what happened once I stopped waiting for accidents. It's deliberately broken examples, built to verify a skill actually catches what it claims to catch instead of just trusting that it does because it sounds right. The coverage-lie catch proved the idea works by accident once. `fixtures/` is the same idea, on purpose, repeatable, and visible in the repo.
 See `fixtures/README.md` for how it's organized.
 
 It's also a learning document. Some of what's here I already knew well, other parts I added because I wanted to understand them, and writing it down is how it stuck. If it works for you too, that's the point.
