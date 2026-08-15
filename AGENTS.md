@@ -93,23 +93,33 @@ impression.
 
 ## Git hygiene
 
-- **Direct commits to `main` are the norm here, not an oversight.** This
-  is a solo-maintained repo — one committer, so a PR-to-self workflow
-  would be ceremony without a second reviewer to justify it. `ai/AGENTS.md`
-  (the template shipped to *other* projects) says "never commit directly
-  to main" because that rule earns its keep once there's a team; it isn't
-  being applied to this repo about itself, deliberately.
+- **Branch protection on `main` is on** (added once a contributor became
+  a real possibility, not preemptively): a PR is required, with 1
+  approving review (stale approvals dismissed on new commits) and all 6
+  `.github/workflows/ci.yml` jobs passing on an up-to-date branch;
+  force-pushes and branch deletion are blocked. Admins are explicitly
+  exempted (`enforce_admins: false`) — see the next bullet for why.
+- **Direct commits to `main` are still the norm for the maintainer**, not
+  an oversight and not something branch protection changed. This is a
+  solo-maintained repo — one committer, so admin exemption keeps the
+  existing PR-to-self-would-be-ceremony workflow intact. The protection
+  above exists to gate a future contributor, who isn't exempt, not to add
+  process to a one-person repo. `ai/AGENTS.md` (the template shipped to
+  *other* projects) says "never commit directly to main" because that
+  rule earns its keep once there's a team — it now actually applies to
+  anyone here *except* the exempted admin.
 - CI still gates every push to `main`, not just PRs — `.github/workflows/ci.yml`
-  runs on `push: branches: [main]` specifically because there's no
-  required-status-check branch protection blocking a bad commit *before*
-  it lands. The trade-off is real: a broken commit gets caught right
-  after landing, not before. `.githooks/pre-commit`/`pre-push` exist to
-  catch most of that locally, before it's even pushed.
+  runs on `push: branches: [main]` regardless of branch protection,
+  because the maintainer's own admin-exempt direct pushes skip the
+  PR-required-checks gate entirely. Push-triggered CI is what still
+  catches a broken direct commit, just after it lands rather than before.
+  `.githooks/pre-commit`/`pre-push` exist to catch most of that locally,
+  before it's even pushed.
 - `.github/pull_request_template.md` and `.github/ISSUE_TEMPLATE/` still
   exist and still matter even though the maintainer's own commits don't
   go through them — dependabot's automated PRs land in this repo's PR
-  surface, and they're what an outside contributor would see if this repo
-  ever took an external PR.
+  surface, and now so would a real contributor's, since they're no longer
+  exempt from the PR requirement above.
 - One logical change per commit, and a message that explains *why* — still
   true here regardless of the above. It's about keeping `git log` useful
   later, not about review ceremony.
@@ -175,8 +185,11 @@ shellcheck, and the README accurately describes what's in the repo. CI
       way and fixed (see `fixtures/security-review/README.md`).
 - [x] Added four optional/advanced AI-security additions to the
       *template* (not to this repo's own operational config — none are
-      wired up here, since this repo has no live LLM-facing feature and
-      no branch protection to attach a required check to): a model-
+      wired up here, since this repo has no live LLM-facing feature and,
+      at the time, no branch protection to attach a required check to —
+      branch protection was added later, see Git hygiene above, but
+      `llm-review.yml` still isn't one of its required checks by choice,
+      not because it can't be): a model-
       classification step in `audit-skills` for rephrased injection
       attempts the regex scan misses, `ai/guardrails.md` for runtime
       protection on projects that do expose an LLM to end users, and two

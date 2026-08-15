@@ -1,7 +1,10 @@
 # Optional, advanced template — NOT copied by scripts/bootstrap.sh by
 # default, and not wired up as an actual required check anywhere in this
-# toolkit (ai-dev-toolkit's own repo doesn't use branch protection
-# at all — see its AGENTS.md's Git hygiene section). Copy to
+# toolkit (ai-dev-toolkit's own repo has branch protection with required
+# status checks now — see its AGENTS.md's Git hygiene section — but this
+# specific template has never been copied into its real
+# .github/workflows/, by choice: it needs an ANTHROPIC_API_KEY and an
+# ongoing-cost decision branch protection alone doesn't settle). Copy to
 # `.github/workflows/llm-review.yml` only if:
 #   1. Your project's repo has branch protection with required status
 #      checks — otherwise "required" is meaningless, anyone can merge

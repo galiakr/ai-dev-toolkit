@@ -275,6 +275,27 @@ forward, the same "an unexplained hash mismatch is a flag" rule
 skills. A version bump means re-running `skillspector baseline` and
 re-triaging each finding by hand, not a mechanical regeneration.
 
+### Branch protection on `main` — the checks above are now actually required
+
+Every job described in this layer has always run and reported its
+result. Until branch protection was added, that result was informational
+only — nothing stopped a red check from being merged around, on this
+repo or on any adopting project's copy of `ci.yml`. This repo's own
+`main` now requires: a PR (not a direct push, for anyone but the
+exempted admin), 1 approving review with stale approvals dismissed on
+new commits, and all 6 jobs above passing on a branch that's up to date
+with `main` — plus force-pushes and branch deletion blocked. Configured
+via the GitHub branch-protection API (`enforce_admins: false`), not a
+file in this repo — there's nothing here for `bootstrap.sh` to copy, and
+adopting projects have to set the equivalent up themselves in their own
+repo settings, the same way `llm-review.yml`'s header already tells them
+to.
+
+Added deliberately once a contributor became a real possibility, not
+preemptively — see `AGENTS.md`'s Git hygiene section for why the
+maintainer's own direct-to-`main` workflow is unaffected (admin
+exemption) while a future contributor's isn't.
+
 ---
 
 ## Layer 3 — On demand, when you actually ask (judgment skills)
@@ -437,7 +458,12 @@ as a comment. **Non-blocking by default**; only fails the check if a repo
 variable `LLM_REVIEW_BLOCKING` is explicitly set to `true`, and even then
 it's meant as a required check _alongside_ human review, never sole merge
 authority — which only means anything if the adopting project actually
-has branch protection turned on, since this repo's own doesn't.
+has branch protection with required status checks turned on. This repo's
+own does now (see Layer 2's branch-protection note above) — but
+`llm-review.yml` itself still isn't one of the checks it requires, since
+the template has never been copied out of `git/workflows/` into this
+repo's real `.github/workflows/`. Branch protection removed one
+prerequisite for adopting it here; it didn't make adopting it automatic.
 
 **A real bug this caught, in itself:** building
 `fixtures/llm-review/`'s canned-response test found that
