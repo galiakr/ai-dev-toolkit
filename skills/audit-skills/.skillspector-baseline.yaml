@@ -4,27 +4,27 @@ version: 2
 scanner_version: 2.9.4
 rules: []
 fingerprints:
-- hash: sha256:9be31089eafcf9d6f0dea471204d42501f4de5ba95935afbe1ef25baae5fbbad
+- hash: sha256:5eecd30be633f7b2912b847746643d9c48ea788bccbed6d6cbac2cbb5008ef6f
   rule_id: AS3
   file: SKILL.md
   reason: "False positive: frontmatter description states this skill checks for credential/SSH-key reads in OTHER skills — it doesn't perform any itself"
-- hash: sha256:f0937e08a9290e1dd0681bae56da8b44cc2236ecfe71cb60c69191242b3fd6ec
+- hash: sha256:3ab286bddc91bb7c8d5e6b9af3824012110da8e0211c4738890e3c9d27f86e07
   rule_id: AS3
   file: SKILL.md
   reason: "False positive: this is the Output Format section's sample finding table, illustrating what a report looks like — not an actual credential read"
-- hash: sha256:85d326ccadff42384dfdf5c668fa5fe7c6c870e44391ff1835631fe66a76cd3b
+- hash: sha256:2848f578f640b4a037879905a393a280f373415a12aa06cfc44d02a3c634ffa7
   rule_id: EA2
   file: SKILL.md
   reason: "False positive: Step 3's own instructions describing what injection-style phrasing to scan FOR — quoting the pattern as documentation, not issuing it"
-- hash: sha256:e9a4b57366b108bc936482f75746b3a1374ced16ed0fad0e4463c916ab9d649a
+- hash: sha256:a4d67e6653f0eb0db70d8b5fe947a5368d5aad4e697f43a4f635a715eeac6cc9
   rule_id: P1
   file: SKILL.md
   reason: "False positive: same Step 3 pattern list (concealment phrasing) quoted as an example of what to flag in other skills, same reason the repo's own mechanical CI scan (audit-skill-security job) already excludes this exact file"
-- hash: sha256:9f99621b644cb2f8f05c2a53ed4abb1396e5b18c41394e8b1d885cd39be1c4d7
+- hash: sha256:8a12c4ea6ff5ff93828643be37eb4c82b09f2d437be734c2767866377d9bdf1d
   rule_id: P9
   file: SKILL.md
   reason: "False positive: this line is the Output Format section's sample finding row (curl example), part of the report template — not a live instruction"
-- hash: sha256:73c10e0dfea537945369ed898785149297eed8fcba00d6f49bf1b87f1a30519a
+- hash: sha256:c05c5e3cc8683e9058fdabef2d58c37976c4c45df9096be99e99ee838e88db13
   rule_id: YR4
   file: SKILL.md
   reason: "False positive: YARA hack-tool signature matched on the same Step 3 canonical injection-phrase list this skill exists to teach and detect — quoted intentionally"
