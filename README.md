@@ -1,10 +1,10 @@
-# ai-starter-playbook
+# ai-dev-toolkit
 
 A personal set of standards, skills, and templates for building AI-ready projects.
 
 ## What this actually is
 
-It all started as an accident and became a deliberate practice. I ran this playbook's `review-tests` skill against a real project's test suite and it reported the coverage gate passing at 100%. Run again with coverage enabled, it caught that the coverage tool was only measuring 1 of 12 source files. The fix went into `review-tests` itself, not just that one project, and it's live in this repo. That was luck, in the sense that nobody planned to find it.
+It all started as an accident and became a deliberate practice. I ran this toolkit's `review-tests` skill against a real project's test suite and it reported the coverage gate passing at 100%. Run again with coverage enabled, it caught that the coverage tool was only measuring 1 of 12 source files. The fix went into `review-tests` itself, not just that one project, and it's live in this repo. That was luck, in the sense that nobody planned to find it.
 
 `fixtures/` is what happened once I stopped waiting for accidents. It's deliberately broken (and deliberately fine-looking) examples, built to verify a skill actually catches what it claims to catch instead of just trusting that it does because it sounds right. The coverage-lie catch proved the idea works by accident once. `fixtures/` is the same idea, on purpose, repeatable, and visible in the repo.
 See `fixtures/README.md` for how it's organized.
@@ -26,7 +26,7 @@ It's a reference I reuse across my own projects, a starting point if you want so
 - **`testing/`**: Vitest + RTL + Playwright setup guide.
 - **`structure/`**: recommended folder layout, naming conventions, and `.env.example`.
 - **`scripts/`**: one-time bootstrap script that scaffolds all of the above into a new project.
-- **`metrics/`**: _templates only_. A blank findings log and a quarterly health-check guide. Nothing in this repo is pre-filled with real project data. Each project that adopts the playbook fills in its own copy.
+- **`metrics/`**: _templates only_. A blank findings log and a quarterly health-check guide. Nothing in this repo is pre-filled with real project data. Each project that adopts the toolkit fills in its own copy.
 - **`LICENSE`**: MIT.
 
 ## Digging into each folder
@@ -39,7 +39,7 @@ It's a reference I reuse across my own projects, a starting point if you want so
 
 ### `skills/`
 
-Each one lives in its own folder, copy the whole thing into `.claude/skills/<name>/`. `scripts/bootstrap.sh` does this for you. Every _project-check_ skill ends with a "log the result" step that appends a row to the project's own `metrics/findings-log.md`. `add-logging-step` and `audit-skills` are exempt. They're authoring/meta skills that check the playbook's own artifacts, so they don't log to a project's findings record.
+Each one lives in its own folder, copy the whole thing into `.claude/skills/<name>/`. `scripts/bootstrap.sh` does this for you. Every _project-check_ skill ends with a "log the result" step that appends a row to the project's own `metrics/findings-log.md`. `add-logging-step` and `audit-skills` are exempt. They're authoring/meta skills that check the toolkit's own artifacts, so they don't log to a project's findings record.
 `audit-skills` does log when it audits skills adopted _into_ a real project. The exemption is for auditing this repo's own skills, not the skill in general.
 
 - **`a11y`**: runs an accessibility audit (axe-core, falling back to Lighthouse, then pa11y), and reports WCAG violations by severity with fix suggestions.
@@ -89,7 +89,7 @@ The second is an LLM-as-judge second opinion on PRs, non-blocking by default, th
 
 ### `metrics/`
 
-`findings-log.md` is a blank template. Once it's copied into a real project, every skill run appends a row: date, skill, outcome, one-sentence detail. `project-memory` is what keeps it from growing forever. `playbook-health.md` is a quarterly checklist that reads from that log rather than starting from scratch — which skills are earning their place, whether `--no-verify` usage is creeping up, whether CI failures are real catches or flaky noise, whether coverage is actually trending and not just passing.
+`findings-log.md` is a blank template. Once it's copied into a real project, every skill run appends a row: date, skill, outcome, one-sentence detail. `project-memory` is what keeps it from growing forever. `toolkit-health.md` is a quarterly checklist that reads from that log rather than starting from scratch — which skills are earning their place, whether `--no-verify` usage is creeping up, whether CI failures are real catches or flaky noise, whether coverage is actually trending and not just passing.
 
 ### Root
 
@@ -112,9 +112,9 @@ Worth being explicit about this, since it's easy to set up wrong: **`metrics/` h
 
 The actual flow: `bootstrap.sh` copies a blank findings log and health-check guide into a new project, same as it does with `AGENTS.md`. From then on that copy is local and self-contained. Every time you run a project-check skill in that project, its last step appends a row to _that project's_ log. Over time each project builds its own history of what a skill has actually found, not just what it's supposed to catch in theory.
 
-`project-memory` periodically archives resolved rows out of that log (never deletes) and checks the `AGENTS.md` checklist against reality, so the record stays useful instead of turning into noise. Quarterly, or whenever you're checking in, `playbook-health.md` reads that log to answer questions like "is this skill finding anything" and "is `--no-verify` creeping up."
+`project-memory` periodically archives resolved rows out of that log (never deletes) and checks the `AGENTS.md` checklist against reality, so the record stays useful instead of turning into noise. Quarterly, or whenever you're checking in, `toolkit-health.md` reads that log to answer questions like "is this skill finding anything" and "is `--no-verify` creeping up."
 
-If you want a cross-project view — comparing findings across everything that's adopted the playbook — that's a manual step during a health check, copying interesting rows out of each project's local log by hand. Nothing automates the rollup, because a session working inside one project's repo can't see the others (yet).
+If you want a cross-project view — comparing findings across everything that's adopted the toolkit — that's a manual step during a health check, copying interesting rows out of each project's local log by hand. Nothing automates the rollup, because a session working inside one project's repo can't see the others (yet).
 
 And if you use a skill that isn't in this repo (a built-in Claude Code skill, or a third-party one), it won't have a "log the result" step. Add the row by hand, run `add-logging-step` after copying that skill's definition in locally, and run `audit-skills` on it before you trust it with bash access in the first place.
 
@@ -140,7 +140,7 @@ Everything else here follows from that, at a smaller scale:
 
 **Test quality matters more than test quantity.** AI writes tests that pass without proving anything.Tautologies, wrong expected values, assertions that can't fail. `review-tests` catches that.
 
-**Standards you don't understand are still worth writing down.** If something's in this playbook and you're not sure why, that's a prompt to go find out. The goal is understanding your own standards, not just following them.
+**Standards you don't understand are still worth writing down.** If something's in this toolkit and you're not sure why, that's a prompt to go find out. The goal is understanding your own standards, not just following them.
 
 ## Contributing
 

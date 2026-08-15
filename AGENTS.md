@@ -1,6 +1,6 @@
-# ai-starter-playbook
+# ai-dev-toolkit
 
-> This is the playbook's own project file and not `ai/AGENTS.md`, which is the
+> This is the toolkit's own project file and not `ai/AGENTS.md`, which is the
 > template handed to _other_ projects. If you're an AI assistant working in
 > this repo, this is the file that describes it.
 
@@ -77,7 +77,7 @@ impression.
 
 ## What to avoid
 
-- **Never fill in `metrics/findings-log.md` or `metrics/playbook-health.md`
+- **Never fill in `metrics/findings-log.md` or `metrics/toolkit-health.md`
   with real rows in this repo.** They're blank templates that get copied
   into adopting projects; this repo's own copy stays empty, permanently.
   Filling it in here would make it look like a specific project's actual
@@ -164,7 +164,7 @@ shellcheck, and the README accurately describes what's in the repo. CI
       `metrics/skill-provenance.md` correctly still doesn't exist here —
       that's a different fact from "the mechanism was never tested."
 - [x] This repo's own CI, hooks, and PR/issue templates were audited
-      against the playbook's own philosophy and closed out — root
+      against the toolkit's own philosophy and closed out — root
       `AGENTS.md` (this file), `.githooks/`, `.github/pull_request_template.md`,
       `.github/ISSUE_TEMPLATE/`, `.github/dependabot.yml` (github-actions only),
       and a `secret-scan` job in `.github/workflows/ci.yml`.

@@ -1,6 +1,6 @@
 # Fixtures
 
-Deliberately broken examples for testing whether this playbook's own
+Deliberately broken examples for testing whether this toolkit's own
 skills actually catch what they claim to catch — not application code, not
 a template for other projects. This is the missing piece the rest of the
 repo doesn't have: `review-tests` catching the 8queens coverage lie was

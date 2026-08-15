@@ -1,8 +1,8 @@
-# This repo's own CI — validates the playbook's content, not an app.
+# This repo's own CI — validates the toolkit's content, not an app.
 # Not to be confused with git/workflows/ci.yml, which is a template meant
 # to be copied into OTHER projects that actually have a package.json.
 #
-# Copy this file to .github/workflows/ci.yml in ai-starter-playbook itself
+# Copy this file to .github/workflows/ci.yml in ai-dev-toolkit itself
 # (not into an adopting project).
 
 name: CI

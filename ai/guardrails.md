@@ -7,7 +7,7 @@ anyone but you, this doesn't apply: a Claude Code session on your own
 machine has no untrusted third party's input reaching a model through it.
 
 This is a different layer from the other two security-flavored things in
-this playbook:
+this toolkit:
 
 - **`security-review`** (a Claude skill) reviews your application's code —
   injection patterns, auth boundaries, headers.
@@ -73,7 +73,7 @@ for the API.
 
 ### 3. NVIDIA NeMo Guardrails
 
-A more structured toolkit if you need it: config-based "rails" —
+A more structured framework if you need it: config-based "rails" —
 topical (stay on-subject), safety (block disallowed content), and
 security/jailbreak rails specifically aimed at injection and jailbreak
 attempts. Runs as a layer between your app and whichever model you call;
@@ -129,5 +129,5 @@ for the full rail syntax and how to wire this into your request path.
 
 Whatever you pick, treat it as one layer, not a guarantee. Every option
 above is a mitigation, not a proof — the same caveat `audit-skills` and
-`security-review` state about themselves in this playbook applies here
+`security-review` state about themselves in this toolkit applies here
 too.

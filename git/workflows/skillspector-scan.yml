@@ -1,9 +1,9 @@
 # Optional, advanced template — NOT copied by scripts/bootstrap.sh by
 # default. Copy to `.github/workflows/skillspector-scan.yml` if this
-# project has adopted this playbook's `.claude/skills/` (bootstrap.sh
+# project has adopted this toolkit's `.claude/skills/` (bootstrap.sh
 # copies every skill folder there by default — see step 8 in its printed
 # manual-steps list) and you want the same real, tool-based skill-security
-# scan this playbook's own repo runs on itself, not just the mechanical
+# scan this toolkit's own repo runs on itself, not just the mechanical
 # grep patterns in `.github/workflows/ci.yml`'s own template job.
 #
 # Optional rather than copied by default for one reason: weight, not
@@ -20,9 +20,9 @@
 # AST/taint analysis, YARA malware signatures, and live CVE lookups the
 # grep pattern structurally cannot attempt.
 #
-# Two things confirmed by running this playbook's own version of this job
+# Two things confirmed by running this toolkit's own version of this job
 # against real and deliberately-planted skills (see
-# `fixtures/skillspector/` in this playbook's repo):
+# `fixtures/skillspector/` in this toolkit's repo):
 #
 # 1. `--no-llm` static scoring has a real recall gap on low-signal
 #    content — a single ambiguous bad line (an unrelated `curl | bash`
@@ -60,10 +60,10 @@ jobs:
 
       - name: Install SkillSpector
         run: |
-          # Pin this the same way this playbook's own CI does — a version
+          # Pin this the same way this toolkit's own CI does — a version
           # bump invalidates every existing .skillspector-baseline.yaml by
           # design (see the header above and SECURITY.md's
-          # skillspector-scan section in this playbook's repo), so bump it
+          # skillspector-scan section in this toolkit's repo), so bump it
           # deliberately, not as a side effect of an unrelated change.
           uv tool install "git+https://github.com/NVIDIA/skillspector.git@v2.9.4"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"

@@ -4,7 +4,7 @@
 projects — ones with a `package.json`. This repo doesn't have one, so
 Husky doesn't fit here: there's nothing for `npx husky init` to hook into,
 and pulling in an npm dependency just to run two shell scripts would be
-exactly the kind of unnecessary tooling this playbook argues against.
+exactly the kind of unnecessary tooling this toolkit argues against.
 
 Same rule, no Node: these hooks are plain scripts checked into
 `.githooks/`, wired up via `git config core.hooksPath`.

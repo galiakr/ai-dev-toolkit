@@ -1,6 +1,6 @@
 # Optional, advanced template — NOT copied by scripts/bootstrap.sh by
 # default, and not wired up as an actual required check anywhere in this
-# playbook (ai-starter-playbook's own repo doesn't use branch protection
+# toolkit (ai-dev-toolkit's own repo doesn't use branch protection
 # at all — see its AGENTS.md's Git hygiene section). Copy to
 # `.github/workflows/llm-review.yml` only if:
 #   1. Your project's repo has branch protection with required status
@@ -42,7 +42,7 @@ permissions:
 
 # Set repository variable LLM_REVIEW_BLOCKING=true to let a non-APPROVE
 # verdict fail this check. Defaults to false — comment-only, matching
-# this playbook's flag-don't-block posture everywhere else in it.
+# this toolkit's flag-don't-block posture everywhere else in it.
 env:
   LLM_REVIEW_BLOCKING: ${{ vars.LLM_REVIEW_BLOCKING || 'false' }}
 

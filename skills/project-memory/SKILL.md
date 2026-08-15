@@ -5,8 +5,8 @@ description: Review AGENTS.md's "known issues / current focus" checklist against
 
 # Project Memory Skill
 
-Two things drift quietly in every project that adopts this playbook, and
-nothing else in the playbook catches either one:
+Two things drift quietly in every project that adopts this toolkit, and
+nothing else in the toolkit catches either one:
 
 1. **`AGENTS.md`'s "known issues / current focus" checklist goes stale.**
    Someone ships a fix and forgets to check the box, or a line describes a

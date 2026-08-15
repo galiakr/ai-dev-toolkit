@@ -5,7 +5,7 @@ description: Heuristic security review of SKILL.md files themselves — dangerou
 
 # Audit Skills
 
-Every skill in this playbook can run bash commands with real file and
+Every skill in this toolkit can run bash commands with real file and
 network access. That makes a `SKILL.md` a different kind of security
 surface than application code: the risk isn't just "does this code have a
 bug," it's "should an agent be trusted to follow these instructions at

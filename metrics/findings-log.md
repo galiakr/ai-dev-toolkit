@@ -2,7 +2,7 @@
 
 Copy this into a new project as `metrics/findings-log.md` — via
 `scripts/bootstrap.sh` or by hand. It ships empty. Do not fill in rows here,
-in the playbook repo itself; this file only ever describes what a project's
+in the toolkit repo itself; this file only ever describes what a project's
 log should look like, not any specific project's actual results.
 
 The point of this file, once it's in a real project: turn "I think this
@@ -34,9 +34,9 @@ can't be checked later, specific ones can.
 
 ## What this feeds
 
-`metrics/playbook-health.md`'s quarterly check pulls from this log rather
+`metrics/toolkit-health.md`'s quarterly check pulls from this log rather
 than starting from scratch — the "is a skill worth keeping" question and
 the before/after comparison both need exactly this data. Cross-project
 rollups (comparing findings across every project that's adopted the
-playbook) are a manual step during that quarterly review, not automatic —
+toolkit) are a manual step during that quarterly review, not automatic —
 each project's log only ever sees that project.

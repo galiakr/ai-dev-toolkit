@@ -5,11 +5,11 @@ description: Retrofit the "log the result" step into a skill's SKILL.md that doe
 
 # Add Logging Step Skill
 
-Every skill in this playbook is supposed to end with a **"log the result"**
+Every skill in this toolkit is supposed to end with a **"log the result"**
 step: a final step that appends one row to the project's
 `metrics/findings-log.md` so the metrics system has a record of what each
 skill actually caught, run by run. A skill without that step runs silently —
-its history is lost, and the health check in `playbook-health.md` has nothing
+its history is lost, and the health check in `toolkit-health.md` has nothing
 to read.
 
 Your job is to add that step to a skill that's missing it, matching the house
@@ -90,7 +90,7 @@ step, before the output section) and that there's exactly one logging step.
 
 > This skill does **not** log its own run to `metrics/findings-log.md`. That
 > log is a record of what project-check skills found or did in a project;
-> `add-logging-step` edits skill *definitions* in the playbook, so its runs
+> `add-logging-step` edits skill *definitions* in the toolkit, so its runs
 > don't belong there. Authoring/meta skills are exempt from the "every skill
 > logs" rule.
 

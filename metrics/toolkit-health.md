@@ -1,8 +1,8 @@
-# Playbook Health Check
+# Toolkit Health Check
 
-This playbook makes claims ("this reduces AI-introduced bugs," "this catches
+This toolkit makes claims ("this reduces AI-introduced bugs," "this catches
 low-quality tests") that would otherwise be unmeasured. Run this check
-quarterly, or after adopting the playbook into a new project. It pulls from
+quarterly, or after adopting the toolkit into a new project. It pulls from
 `metrics/findings-log.md` — the raw, per-run data — rather than starting
 from scratch each time.
 
@@ -59,7 +59,7 @@ month:
 
 ## 5. Before/after comparison
 
-The strongest evidence this playbook works: pick one project that adopted it
+The strongest evidence this toolkit works: pick one project that adopted it
 and one that didn't (or a before/after on the same project), and compare:
 - bug reports per month
 - time-to-detect for regressions (caught in CI vs. caught in production)

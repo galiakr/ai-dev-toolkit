@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Bootstrap a new project with ai-starter-playbook's files.
+# Bootstrap a new project with ai-dev-toolkit's files.
 #
-# Usage: run from inside a checkout of ai-starter-playbook:
+# Usage: run from inside a checkout of ai-dev-toolkit:
 #   ./scripts/bootstrap.sh /path/to/new-project
 #
 # This is a one-time copy, not an installed dependency — the destination
@@ -55,8 +55,8 @@ mkdir -p "$DEST/metrics"
 if [ -f "$SRC_DIR/metrics/findings-log.md" ]; then
   cp "$SRC_DIR/metrics/findings-log.md" "$DEST/metrics/findings-log.md"
 fi
-if [ -f "$SRC_DIR/metrics/playbook-health.md" ]; then
-  cp "$SRC_DIR/metrics/playbook-health.md" "$DEST/metrics/playbook-health.md"
+if [ -f "$SRC_DIR/metrics/toolkit-health.md" ]; then
+  cp "$SRC_DIR/metrics/toolkit-health.md" "$DEST/metrics/toolkit-health.md"
 fi
 
 # Claude skills (one folder per skill, each with a SKILL.md, Claude Code convention)

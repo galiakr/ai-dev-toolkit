@@ -12,7 +12,7 @@ canned response, under both `LLM_REVIEW_BLOCKING` values.
 
 Every row except `APPROVE` should exit 0 under the default
 (non-blocking) mode regardless of how bad the verdict is — this is by
-design, matching the playbook's flag-don't-block posture everywhere else.
+design, matching the toolkit's flag-don't-block posture everywhere else.
 Only `LLM_REVIEW_BLOCKING=true` should ever turn a non-`APPROVE` verdict
 into a failing check.
 

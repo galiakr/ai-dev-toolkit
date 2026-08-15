@@ -42,7 +42,7 @@ jobs:
     # patterns, prompt-injection-style phrasing) — the parts a fixed
     # pattern can catch without an agent's judgment call. Only runs if
     # .claude/skills/ exists in this project. Skip this job (or remove it)
-    # if you never adopted the skills/ folder from ai-starter-playbook.
+    # if you never adopted the skills/ folder from ai-dev-toolkit.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
