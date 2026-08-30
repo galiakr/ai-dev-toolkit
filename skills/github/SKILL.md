@@ -59,6 +59,15 @@ gh issue close 42
 gh pr create --title "feat: add X" --body "## What\nDescription here" --base main
 ```
 
+**Closing multiple issues from one PR:** GitHub only auto-closes the issue
+immediately after a closing keyword. `Closes #21, #22, #23, #24` in the PR
+body only closes **#21** on merge — #22–#24 just get referenced, not closed.
+Repeat the keyword before each one instead: `closes #21, closes #22, closes
+#23, closes #24`. Verify what actually linked before assuming a merge closed
+everything: `gh api repos/<owner>/<repo>/pulls/<n> -q '.closingIssuesReferences[].number'`.
+If a PR already merged with the comma-list form, close the missed issues
+manually (`gh issue close <n> --comment "..."`) rather than leaving them open.
+
 ### List open PRs
 
 ```bash
