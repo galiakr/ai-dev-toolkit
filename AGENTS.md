@@ -61,6 +61,19 @@ none of the three are ever copied by `bootstrap.sh`.
   report findings and let a human decide. They never silently rewrite or
   delete something on their own authority.
 
+`scripts/check-skills.sh` enforces the mechanical part of this on every
+commit, push, and CI run: closed frontmatter with non-empty `name:` and
+`description:`, a `## Steps` section with numbered steps (`### 1. ...`,
+`### Step 1 — ...`, or `1. ...`) whose last step logs the result, and an
+`## Output Format` followed by an example. Only `add-logging-step` is
+exempt from the logging check — `audit-skills` still carries its logging
+step because it logs in adopting projects; its exemption here is about
+this repo's own runs, not its file. Not enforced, because a grep can't
+judge it: whether the description triggers well, whether the example is
+realistic, and whether the "nothing found" fallback exists and makes
+sense. `scripts/test-check-skills.sh` proves each enforced rule catches a
+planted defect.
+
 ### Workflow templates (`git/workflows/*.yml`)
 
 Must pass `actionlint`. The `validate-workflow-templates` CI job checks

@@ -18,6 +18,12 @@ else
   echo "shellcheck not installed locally — skipping (CI still runs it)."
 fi
 
+echo "Running check-skills.sh planted-defect test..."
+if ! ./scripts/test-check-skills.sh >/dev/null; then
+  echo "[error] scripts/test-check-skills.sh failed — run it directly to see which check."
+  fail=1
+fi
+
 echo "Running bootstrap smoke checks..."
 if ! ./scripts/test-bootstrap.sh >/dev/null; then
   echo "[error] scripts/test-bootstrap.sh failed — run it directly to see which check."

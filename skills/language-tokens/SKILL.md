@@ -23,7 +23,7 @@ This is worth doing **even for a single-language project** — it means all copy
 
 A generator script converts between the two so nobody has to hand-edit JSON and nobody has to learn code. The CSV/spreadsheet is the source non-coders touch; the JSON is generated for the app.
 
-## Workflow
+## Steps
 
 ### Step 1 — Assess the project
 
@@ -111,6 +111,21 @@ If the project has a build step, suggest wiring the generate command into it so 
 ### Step 6 — Log the result
 
 Append one row to `metrics/findings-log.md`: date, project, `language-tokens`, an outcome (`Action taken`), and one sentence covering what was centralized — how many strings migrated, how many languages, and whether an existing i18n setup was extended rather than replaced.
+
+## Output Format
+
+```
+## Language Tokens — set up in `tokens/`
+
+- Existing setup: none found (new `tokens/` folder) | extended existing `src/locales/` (i18next)
+- Languages: en, es (es: 3 missing/TODO — need a human translator: common.cancel, home.greeting, checkout.pay_button)
+- Strings migrated this pass: 12 of ~80 found in src/components/ — the rest can move incrementally
+- Code wired: `t()` helper in src/lib/t.js; Header.jsx and Checkout.jsx now use it
+- To update text: edit tokens/tokens.csv, then run
+  python tokens/generate.py tokens/tokens.csv --out tokens/locales
+```
+
+If the project already has every user-facing string centralized: `Text is already centralized in <location> — no changes made.`
 
 ## Notes
 

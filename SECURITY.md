@@ -174,11 +174,18 @@ documented `./scripts/bootstrap.sh` invocation failed on a fresh clone.
 
 ### `validate-skills`
 
-Runs `scripts/check-skills.sh --only structure`. Three checks, none of
+Runs `scripts/check-skills.sh --only structure`, then
+`scripts/test-check-skills.sh`, which plants one malformed skill per rule
+in a throwaway copy and confirms each is caught. Three checks, none of
 which need an external tool:
 
-1. Every `skills/*/SKILL.md` has valid frontmatter (`name:`,
-   `description:`).
+1. Every `skills/*/SKILL.md` follows the documented structure (root
+   `AGENTS.md`, "Skill files"): closed frontmatter with non-empty `name:`
+   and `description:` inside it, a `## Steps` section with numbered steps
+   whose last step logs the result (`add-logging-step` exempt), and an
+   `## Output Format` followed by an example. Before this, the check only
+   looked for `name:`/`description:` anywhere in the file, and `github`
+   and `language-tokens` had drifted from the convention unnoticed.
 2. No orphaned flat skill files left over from before skills moved into
    per-skill folders.
 3. Every skill folder is mentioned by name (backtick-quoted) somewhere in

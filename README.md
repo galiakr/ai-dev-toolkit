@@ -107,6 +107,8 @@ It's safe on an existing project and safe to rerun. Files that don't exist yet a
 
 `toolkit-report.sh owner/repo [owner/repo ...]` is read-only: it counts issues labelled `found-by:<source>` in each repo and splits them into fixed, open, and noise (`wontfix`/`invalid`), plus how many runs were logged on a `skill-runs` tracking issue. Needs `gh` and `jq`. It's run from a checkout of this repo, so `bootstrap.sh` doesn't copy it.
 
+`check-skills.sh` is this repo's own skill validator (structure from `AGENTS.md`'s conventions, plus the mechanical half of `audit-skills`), shared by the git hooks and CI so they can't disagree. `test-check-skills.sh` and `test-bootstrap.sh` prove those two scripts catch what they claim to. None of these three is copied by `bootstrap.sh`.
+
 ### `metrics/`
 
 `findings-log.md` is a blank template. Once it's copied into a real project, every skill run appends a row: date, skill, outcome, one-sentence detail. `project-memory` is what keeps it from growing forever. `toolkit-health.md` is a quarterly checklist that reads from that log rather than starting from scratch — which skills are earning their place, whether `--no-verify` usage is creeping up, whether CI failures are real catches or flaky noise, whether coverage is actually trending and not just passing.

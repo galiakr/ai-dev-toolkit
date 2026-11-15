@@ -5,17 +5,56 @@ description: Use this skill for any GitHub operations in the terminal or Claude 
 
 # GitHub Skill
 
-Use the `gh` CLI for all GitHub operations. The token is already set via `GITHUB_TOKEN` env variable.
+Use the `gh` CLI for all GitHub operations. `gh` uses `GITHUB_TOKEN` if it's
+set, otherwise its own stored login — `gh auth status` shows which.
 
-## Before anything
+## Steps
 
-Always confirm which repo you're in:
+1. **Confirm the repo and auth.** Run `gh repo view` (and `gh auth status`
+   if anything fails). Acting on the wrong repo is the most expensive
+   mistake this skill can make.
+2. **Look before you create.** Before opening an issue or PR, search for an
+   existing one (`gh issue list --search "<keyword>" --state all`). A
+   comment on an existing issue beats a duplicate.
+3. **Do the operation**, using the command reference below — issues, pull
+   requests, or rebase-based conflict resolution.
+4. **If you're turning another skill's findings into issues**, follow
+   "Triaging findings from other skills" below: dedupe, label (including
+   `found-by:`), assign.
+5. **Report what you did**, in the Output Format below — what was created,
+   what was recognized as already tracked, and why.
+6. **Log the result.** Append one row to `metrics/findings-log.md`: date,
+   project, `github`, an outcome (`Action taken`), and one sentence covering
+   how many issues were newly opened vs. recognized as already-tracked. The
+   duplicate-avoidance count is worth keeping — it's evidence of judgment,
+   not just throughput.
 
-```bash
-gh repo view
+   If the project's `AGENTS.md` says findings are tracked as GitHub issues
+   instead of in `metrics/findings-log.md` (or says that file must stay
+   blank), don't write the row. Post the same sentence as a comment on the
+   project's `skill-runs` tracking issue instead, and skip logging entirely
+   only if neither exists — say so in the summary rather than silently.
+
+## Output Format
+
+```
+## GitHub — owner/repo
+
+Opened 3, recognized 1 as already tracked:
+- #41 Missing alt text on product images (new) — bug, accessibility, found-by:a11y
+- #42 Unlabeled search input (new) — bug, accessibility, found-by:a11y
+- #43 Coverage excludes src/api/ (new) — tests, found-by:review-tests
+- #37 Low-contrast footer text (existing) — commented with the repro, added found-by:a11y
+
+Logged: 3 opened, 1 already tracked.
 ```
 
+If nothing needed doing: `No GitHub changes made — <one-line reason, e.g.
+every finding was already tracked>.`
+
 ---
+
+# Command reference
 
 ## Issues
 
@@ -159,19 +198,6 @@ When asked to open and assign issues from another skill's findings:
 2. **Label consistently** — use labels that describe the finding's category (`bug`, `accessibility`, `tests`, `enhancement`), not just a generic `todo`. Also add a `found-by:<source>` label naming what produced the finding (`found-by:a11y`, `found-by:ci`, `found-by:review` for a review pass that wasn't a skill run), creating it with `gh label create` if it doesn't exist yet. That attribution is what lets the toolkit's `scripts/toolkit-report.sh` say which skills actually find things.
 3. **Assign to the requester** unless told otherwise.
 4. **Report a summary**, not just a list of numbers: how many were new vs. recognized as existing, and why — that judgment call is worth surfacing, not hiding inside a terse "done."
-
-## Log the result
-
-Append one row to `metrics/findings-log.md`: date, project, `github`, an
-outcome (`Action taken`), and one sentence covering how many issues were
-newly opened vs. recognized as already-tracked. The duplicate-avoidance
-count is worth keeping — it's evidence of judgment, not just throughput.
-
-If the project's `AGENTS.md` says findings are tracked as GitHub issues
-instead of in `metrics/findings-log.md` (or says that file must stay
-blank), don't write the row. Post the same sentence as a comment on the
-project's `skill-runs` tracking issue instead, and skip logging entirely
-only if neither exists — say so in the summary rather than silently.
 
 ---
 

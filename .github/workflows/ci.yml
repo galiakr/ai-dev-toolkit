@@ -74,6 +74,11 @@ jobs:
       - name: Skill structure
         run: ./scripts/check-skills.sh --gha --only structure
 
+      # Planted-defect test for check-skills.sh itself: one malformed skill
+      # per rule must fail, a compliant one must pass.
+      - name: check-skills.sh catches what it claims to
+        run: ./scripts/test-check-skills.sh
+
   audit-skill-security:
     # Mechanical subset of the audit-skills skill (dangerous command
     # patterns, prompt-injection-style phrasing) that doesn't need an

@@ -89,11 +89,76 @@ check_security() { # path-to-read, name-to-report
   grep_report error "$path" "$name" "language aimed at the agent rather than the user" "$INJECTION_PATTERN" -niE
 }
 
+# Skills exempt from the "last step logs the result" rule. add-logging-step
+# edits other skills' files rather than checking a project, so it has no
+# findings to log. (audit-skills is exempt from logging only when it audits
+# this repo's own skills — its SKILL.md still carries the step, because it
+# does log in adopting projects, so it's checked like any other skill.)
+LOGGING_EXEMPT="add-logging-step"
+
+# Structure rules from AGENTS.md's "Skill files" convention. What a grep
+# can check is checked: frontmatter is closed and has name/description;
+# a "## Steps" section with numbered steps whose last step logs the result;
+# a "## Output Format" section followed by an example. What it can't judge
+# — whether the description is specific enough to trigger correctly,
+# whether the example is realistic, whether there's a sensible "nothing
+# found" fallback line — is left to review (and audit-skills).
 check_structure() { # path-to-read, name-to-report
-  local path="$1" name="$2"
-  head -1 "$path" | grep -q '^---$' || report error "$name" "missing frontmatter opening ---"
-  grep -q '^name:' "$path" || report error "$name" "missing 'name:' in frontmatter"
-  grep -q '^description:' "$path" || report error "$name" "missing 'description:' in frontmatter"
+  local path="$1" name="$2" skill problem
+  skill=$(basename "$(dirname "$name")")
+  while IFS= read -r problem; do
+    case "$problem" in
+      "") ;;
+      FM_OPEN) report error "$name" "missing frontmatter opening --- on line 1" ;;
+      FM_UNCLOSED) report error "$name" "frontmatter is never closed with a second ---" ;;
+      FM_NAME) report error "$name" "frontmatter has no non-empty 'name:'" ;;
+      FM_DESC) report error "$name" "frontmatter has no non-empty 'description:'" ;;
+      NO_STEPS) report error "$name" "no '## Steps' section" ;;
+      NO_NUMBERED) report error "$name" "'## Steps' has no numbered steps ('### 1. ...', '### Step 1 — ...', or '1. ...')" ;;
+      NO_LOG)
+        case " $LOGGING_EXEMPT " in
+          *" $skill "*) ;;
+          *) report error "$name" "the last step in '## Steps' doesn't log the result (append to metrics/findings-log.md)" ;;
+        esac
+        ;;
+      NO_OUTPUT) report error "$name" "no '## Output Format' section" ;;
+      NO_EXAMPLE) report error "$name" "'## Output Format' is followed by no example" ;;
+    esac
+  done <<<"$(awk '
+    NR == 1 { if ($0 != "---") { print "FM_OPEN"; fm_done = 1 } else { in_fm = 1 }; next }
+    in_fm {
+      if ($0 == "---") { in_fm = 0; fm_done = 1; fm_closed = 1; next }
+      if ($0 ~ /^name:[[:space:]]*[^[:space:]]/) has_name = 1
+      if ($0 ~ /^description:[[:space:]]*[^[:space:]]/) has_desc = 1
+      next
+    }
+    # Any real content after "## Output Format" counts as its example:
+    # skills write it fenced, or as raw markdown after a --- rule (so its
+    # own "## ..." heading must count, not end the section).
+    has_output && !has_example && $0 !~ /^## Output Format/ && $0 !~ /^(---|[[:space:]]*)$/ { has_example = 1 }
+    /^```/ { in_fence = !in_fence; next }
+    in_fence { if (section == "steps" && last_step) last_text = last_text "\n" $0; next }
+    /^## / {
+      section = ""
+      if ($0 ~ /^## Steps[[:space:]]*$/) { section = "steps"; has_steps = 1 }
+      if ($0 ~ /^## Output Format[[:space:]]*$/) { section = "output"; has_output = 1 }
+      next
+    }
+    section == "steps" {
+      if ($0 ~ /^### (Step )?[0-9]+[.:)[:space:]]/ || $0 ~ /^[0-9]+\. /) { numbered = 1; last_step = 1; last_text = $0; next }
+      if (last_step) last_text = last_text "\n" $0
+    }
+    END {
+      if (!fm_closed && !fm_done) print "FM_UNCLOSED"
+      if (fm_closed && !has_name) print "FM_NAME"
+      if (fm_closed && !has_desc) print "FM_DESC"
+      if (!has_steps) print "NO_STEPS"
+      else if (!numbered) print "NO_NUMBERED"
+      else if (tolower(last_text) !~ /findings-log|log the result/) print "NO_LOG"
+      if (!has_output) print "NO_OUTPUT"
+      else if (!has_example) print "NO_EXAMPLE"
+    }
+  ' "$path")"
 }
 
 # --- Which files ---------------------------------------------------------------
