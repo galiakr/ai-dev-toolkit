@@ -79,6 +79,11 @@ jobs:
       - name: check-skills.sh catches what it claims to
         run: ./scripts/test-check-skills.sh
 
+      # The one skill that ships executable code: run its generator against
+      # the planted CSVs in fixtures/language-tokens/ (stdlib Python only).
+      - name: language-tokens generator regression checks
+        run: python3 -I fixtures/language-tokens/test_generate.py
+
   audit-skill-security:
     # Mechanical subset of the audit-skills skill (dangerous command
     # patterns, prompt-injection-style phrasing) that doesn't need an

@@ -1,0 +1,6 @@
+key,description,en,es
+common.save,Save button used across all forms,Save,Guardar
+common.cancel,Cancel button,Cancel,TODO
+home.greeting,"Home greeting. {name} is the user's first name","Welcome, {name}!","¡Bienvenido, {name}!"
+home.title.main,Main heading on the home page,Home,
+checkout.pay_button,"Pay button, shown on the last checkout step",Pay now,Pagar ahora

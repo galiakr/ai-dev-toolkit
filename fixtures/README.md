@@ -47,6 +47,7 @@ findings log, one level up.
 | `sync-context`    | An `AGENTS.md`/`copilot-instructions.md` pair where one file states a rule the other silently omits and then contradicts                                                                                                                                                                                                                               |
 | `security-review` | A cookie-auth route with a real CSRF gap, a bearer-token route that looks the same but isn't (false-positive check), unsanitized rendering, and a hardcoded credential                                                                                                                                                                                 |
 | `a11y`            | Missing alt text, an unlabeled input, and low-contrast text, each paired with a correctly-marked-up equivalent (false-positive check)                                                                                                                                                                                                                  |
+| `language-tokens` | Planted CSVs for the skill's `generate.py`: valid nested keys with placeholders/TODO/blank cells, a duplicate key, a key used as both value and group (both row orders), a `../escaped` language header, and a duplicated header. The only skill fixture that's fully deterministic — `test_generate.py` runs in CI. |
 
 ### GitHub Actions templates (`git/workflows/`)
 

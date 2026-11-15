@@ -24,6 +24,12 @@ if ! ./scripts/test-check-skills.sh >/dev/null; then
   fail=1
 fi
 
+echo "Running language-tokens generator regression checks..."
+if ! python3 -I fixtures/language-tokens/test_generate.py >/dev/null; then
+  echo "[error] fixtures/language-tokens/test_generate.py failed — run it directly to see which check."
+  fail=1
+fi
+
 echo "Running bootstrap smoke checks..."
 if ! ./scripts/test-bootstrap.sh >/dev/null; then
   echo "[error] scripts/test-bootstrap.sh failed — run it directly to see which check."
