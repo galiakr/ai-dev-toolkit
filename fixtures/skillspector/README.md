@@ -25,6 +25,7 @@ skillspector/
     SKILL.md
     .skillspector-baseline.yaml
     HOW-TO-TEST.md                   <- three-run procedure, same shape as audit-skills/adopted-skill-simulation/HOW-TO-TEST.md
+  test-ci-loop.sh                    <- tests the CI job's own shell loop, not the scanner: extracts the real run: block from ci.yml and the template, runs it under Actions' bash -eo pipefail with a stub scanner, and checks a failing skill doesn't stop the rest (issue #11). Runs in CI.
 ```
 
 ## Why three scenarios, not one

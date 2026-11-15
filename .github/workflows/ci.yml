@@ -57,6 +57,11 @@ jobs:
       - name: Bootstrap smoke checks
         run: ./scripts/test-bootstrap.sh
 
+      # Runs skillspector-scan's own loop (extracted from this file and the
+      # shipped template) against a stub scanner — see the script header.
+      - name: SkillSpector CI loop regression check
+        run: ./fixtures/skillspector/test-ci-loop.sh
+
   validate-skills:
     runs-on: ubuntu-latest
     steps:
@@ -217,8 +222,11 @@ jobs:
             [ -f "$baseline" ] && args+=(--baseline "$baseline")
 
             echo "::group::skillspector scan — $name"
-            skillspector "${args[@]}"
-            code=$?
+            # Actions runs this step under `bash -e`: a bare call that exits
+            # nonzero would end the step right here, skipping the diagnostics
+            # below, ::endgroup::, and every remaining skill. Capture instead.
+            code=0
+            skillspector "${args[@]}" || code=$?
             echo "::endgroup::"
 
             if [ "$code" -eq 1 ]; then
@@ -226,6 +234,9 @@ jobs:
               fail=1
             elif [ "$code" -eq 2 ]; then
               echo "::error file=${d}SKILL.md::SkillSpector: scan itself failed (bad input, unreadable source, or internal error) — see the scan output above"
+              fail=1
+            elif [ "$code" -ne 0 ]; then
+              echo "::error file=${d}SKILL.md::SkillSpector: unexpected exit code $code — see the scan output above"
               fail=1
             fi
           done
