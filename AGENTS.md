@@ -165,7 +165,9 @@ they're installed locally (CI runs all three regardless).
 There's no test suite. Nothing here is application code to unit-test.
 "Correctness" for this repo means: skill files have valid frontmatter and
 a logging step, workflow templates lint clean, `bootstrap.sh` passes
-shellcheck, and the README accurately describes what's in the repo. CI
+shellcheck and `scripts/test-bootstrap.sh` (the one real behavioral
+test here — change one, update the other), and the README accurately
+describes what's in the repo. CI
 (`.github/workflows/ci.yml`) checks all of that on every push and PR.
 
 ## Instructions for AI assistants

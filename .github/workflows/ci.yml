@@ -46,10 +46,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Shellcheck bootstrap.sh
+      - name: Shellcheck scripts/
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: './scripts'
+
+      # Shellcheck can't tell whether bootstrap.sh copies the right files or
+      # preserves a project's existing ones on rerun — this actually runs it
+      # against throwaway directories. See the script header for coverage.
+      - name: Bootstrap smoke checks
+        run: ./scripts/test-bootstrap.sh
 
   validate-skills:
     runs-on: ubuntu-latest

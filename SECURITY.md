@@ -82,10 +82,12 @@ application code.
   that shouldn't exist anymore).
 - The README-documentation-sync check (every skill folder should have a
   matching entry in `README.md`).
-- `shellcheck` on `scripts/bootstrap.sh`, `actionlint` on
+- `shellcheck` on `scripts/*.sh`, `actionlint` on
   `git/workflows/*.yml`, and `gitleaks` — **if you have them installed
   locally.** If you don't, it says so and moves on; it doesn't fail
   silently, and CI runs all three regardless of what's on your machine.
+- `scripts/test-bootstrap.sh`, always — it's plain Bash with no tool to
+  install.
 
 **Why two hooks instead of one:** the same reasoning as any staged/full
 split — fast feedback on every commit, a slower but complete pass before
@@ -140,11 +142,20 @@ fails.
 
 ### `validate-shell-scripts`
 
-`shellcheck` against `scripts/bootstrap.sh` — the one script every
-adopting project actually runs, unattended, in their first five minutes
-with this repo. A cryptic shell bug here is a uniquely bad first
-impression; this job exists specifically because of that stake, not as
-generic hygiene.
+`shellcheck` against `scripts/` — mainly for `bootstrap.sh`, the one
+script every adopting project actually runs, unattended, in their first
+five minutes with this repo. A cryptic shell bug here is a uniquely bad
+first impression; this job exists specifically because of that stake, not
+as generic hygiene.
+
+Then `scripts/test-bootstrap.sh` actually runs `bootstrap.sh` against
+throwaway directories: every expected file lands, nothing that's this
+repo's own (fixtures, hooks, its own CI, SkillSpector baselines) leaks
+out, a rerun is a no-op, a customized file or a project's
+`metrics/findings-log.md` survives a rerun, and `--force` still never
+touches `metrics/`. Shellcheck can't see any of that. Writing it caught
+that `bootstrap.sh` had been committed without its executable bit, so the
+documented `./scripts/bootstrap.sh` invocation failed on a fresh clone.
 
 ### `validate-skills`
 

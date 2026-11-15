@@ -100,7 +100,9 @@ The second is an LLM-as-judge second opinion on PRs, non-blocking by default, th
 
 ### `scripts/`
 
-`bootstrap.sh` copies `AGENTS.md`, Copilot instructions, the CI/security workflows, `dependabot.yml`, the PR and issue templates, `LICENSE`, `.env.example`, every skill folder, and a blank `metrics/` folder into a new project in one pass. It's a one-time scaffold, not a dependency. The destination project owns the files afterward and can edit them freely.
+`bootstrap.sh` copies `AGENTS.md`, Copilot instructions, the CI/security workflows, `dependabot.yml`, the PR and issue templates, `LICENSE`, `.env.example`, every skill folder, and a blank `metrics/` folder into a project in one pass. It's a one-time scaffold, not a dependency. The destination project owns the files afterward and can edit them freely.
+
+It's safe on an existing project and safe to rerun. Files that don't exist yet are created, identical ones are left alone, and ones that already exist with different content are **skipped** and listed at the end, so a customized `AGENTS.md`, workflow, or skill is never silently replaced. Files you added inside a skill folder are never touched. `--force` replaces skipped files, except anything under `metrics/`, which is the project's own findings history and is never replaced. `--dry-run` shows the plan without writing anything. `test-bootstrap.sh` checks all of this against throwaway directories, in CI and in `pre-push`.
 `fixtures/` isn't copied. It exists to test this repo's own skills, not to be handed to an adopting project.
 
 `toolkit-report.sh owner/repo [owner/repo ...]` is read-only: it counts issues labelled `found-by:<source>` in each repo and splits them into fixed, open, and noise (`wontfix`/`invalid`), plus how many runs were logged on a `skill-runs` tracking issue. Needs `gh` and `jq`. It's run from a checkout of this repo, so `bootstrap.sh` doesn't copy it.
@@ -153,7 +155,7 @@ For a summary, run `./scripts/toolkit-report.sh galiakr/ai-dev-toolkit`. An hone
 
 No install step, no required tooling. Browse the folder that's relevant to what you're setting up, copy what you need, adapt it.
 
-For a whole new project, `scripts/bootstrap.sh /path/to/new-project` copies the default set in one pass,then prints the manual steps that are left.
+For a whole project, new or existing, `scripts/bootstrap.sh /path/to/project` copies the default set in one pass, skipping anything that already exists and differs, then prints the manual steps that are left. Add `--dry-run` first to see what it would do.
 
 ## How I think about AI-assisted development
 

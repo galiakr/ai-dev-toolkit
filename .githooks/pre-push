@@ -55,6 +55,12 @@ else
   echo "shellcheck not installed locally — skipping (CI still runs it)."
 fi
 
+echo "Running bootstrap smoke checks..."
+if ! ./scripts/test-bootstrap.sh >/dev/null; then
+  echo "[error] scripts/test-bootstrap.sh failed — run it directly to see which check."
+  fail=1
+fi
+
 if command -v actionlint >/dev/null 2>&1; then
   echo "Running actionlint on git/workflows/*.yml..."
   actionlint git/workflows/*.yml || fail=1
