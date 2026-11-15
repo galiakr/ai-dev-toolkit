@@ -68,7 +68,29 @@ this on every push. `.github/workflows/ci.yml` (this repo's own CI, not a
 template) isn't linted the same way, but keep it valid YAML and consistent
 in style with the templates it sits next to.
 
-### Shell (`scripts/bootstrap.sh`, `.githooks/*`)
+### Recording findings in this repo (GitHub issues, not `metrics/`)
+
+Every project-check skill ends with "Log the result" → append a row to
+`metrics/findings-log.md`. **In this repo, that step means GitHub issues
+instead**, because `metrics/` here must stay blank (see "What to avoid"):
+
+- **A finding** → an issue (check for an existing one first, per the
+  `github` skill) labelled `found-by:<source>`: the skill's name
+  (`found-by:security-review`), or `found-by:ci`, `found-by:hooks`,
+  `found-by:fixture`, or `found-by:review` for a human/AI review pass
+  that wasn't a skill run. Plus a type label and a `priority: P1`–`P4`.
+- **Every run, clean ones included** → one comment on the pinned
+  `skill-runs` issue: `<skill> · <Clean | Found N> · <one sentence,
+  specific numbers> · <issue refs>`.
+- **Outcome** is the issue's state: closed as completed = fixed, open =
+  open, `wontfix`/`invalid` = noise. Close fixes from the commit
+  (`Fixes #N`) so the evidence links to the change.
+
+`scripts/toolkit-report.sh galiakr/ai-dev-toolkit` summarizes it.
+README's "Does this work on its own repo?" section is the public face of
+this. Don't claim a number there that the issues don't back up.
+
+### Shell (`scripts/*.sh`, `.githooks/*`)
 
 Must pass `shellcheck`. Prefer plain POSIX-ish Bash over anything clever —
 this script runs unattended on someone else's machine during their first
@@ -82,7 +104,8 @@ impression.
   into adopting projects; this repo's own copy stays empty, permanently.
   Filling it in here would make it look like a specific project's actual
   results, which is exactly the kind of confusion the metrics system
-  exists to prevent.
+  exists to prevent. This repo's own findings go to GitHub issues — see
+  "Recording findings in this repo" above.
 - Don't add a skill folder without documenting it in `README.md`'s skill
   list — the `validate-skills` CI job warns (doesn't block) when one's
   missing, but treat the warning as real.

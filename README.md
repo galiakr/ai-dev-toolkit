@@ -41,7 +41,7 @@ It's a reference I reuse across my own projects, a starting point if you want so
 - **`git/ISSUE_TEMPLATE/`**: bug report and feature request templates.
 - **`testing/`**: Vitest + RTL + Playwright setup guide.
 - **`structure/`**: recommended folder layout, naming conventions, and `.env.example`.
-- **`scripts/`**: one-time bootstrap script that scaffolds all of the above into a new project.
+- **`scripts/`**: one-time bootstrap script that scaffolds all of the above into a new project, plus a read-only report of what skills and checks have actually found, from GitHub issues.
 - **`metrics/`**: _templates only_. A blank findings log and a quarterly health-check guide. Nothing in this repo is pre-filled with real project data. Each project that adopts the toolkit fills in its own copy.
 - **`LICENSE`**: MIT.
 
@@ -103,6 +103,8 @@ The second is an LLM-as-judge second opinion on PRs, non-blocking by default, th
 `bootstrap.sh` copies `AGENTS.md`, Copilot instructions, the CI/security workflows, `dependabot.yml`, the PR and issue templates, `LICENSE`, `.env.example`, every skill folder, and a blank `metrics/` folder into a new project in one pass. It's a one-time scaffold, not a dependency. The destination project owns the files afterward and can edit them freely.
 `fixtures/` isn't copied. It exists to test this repo's own skills, not to be handed to an adopting project.
 
+`toolkit-report.sh owner/repo [owner/repo ...]` is read-only: it counts issues labelled `found-by:<source>` in each repo and splits them into fixed, open, and noise (`wontfix`/`invalid`), plus how many runs were logged on a `skill-runs` tracking issue. Needs `gh` and `jq`. It's run from a checkout of this repo, so `bootstrap.sh` doesn't copy it.
+
 ### `metrics/`
 
 `findings-log.md` is a blank template. Once it's copied into a real project, every skill run appends a row: date, skill, outcome, one-sentence detail. `project-memory` is what keeps it from growing forever. `toolkit-health.md` is a quarterly checklist that reads from that log rather than starting from scratch — which skills are earning their place, whether `--no-verify` usage is creeping up, whether CI failures are real catches or flaky noise, whether coverage is actually trending and not just passing.
@@ -130,11 +132,22 @@ The actual flow: `bootstrap.sh` copies a blank findings log and health-check gui
 
 `project-memory` periodically archives resolved rows out of that log (never deletes) and checks the `AGENTS.md` checklist against reality, so the record stays useful instead of turning into noise. Quarterly, or whenever you're checking in, `toolkit-health.md` reads that log to answer questions like "is this skill finding anything" and "is `--no-verify` creeping up."
 
-If you want a cross-project view — comparing findings across everything that's adopted the toolkit — that's a manual step during a health check, copying interesting rows out of each project's local log by hand. Nothing automates the rollup, because a session working inside one project's repo can't see the others (yet).
+If you want a cross-project view — comparing findings across everything that's adopted the toolkit — that's a manual step during a health check, copying interesting rows out of each project's local log by hand, because a session working inside one project's repo can't see the others. The exception: a project that tracks findings as `found-by:` labelled GitHub issues (the way this repo does, below) can be rolled up with `scripts/toolkit-report.sh`, which takes any number of repos.
 
 And if you use a skill that isn't in this repo (a built-in Claude Code skill, or a third-party one), it won't have a "log the result" step. Add the row by hand, run `add-logging-step` after copying that skill's definition in locally, and run `audit-skills` on it before you trust it with bash access in the first place.
 
 The reason any of this exists: a rule is easy to write down and easy to assume is helping. `findings-log.md` and `project-memory` are how that stays checked instead of assumed for a _specific project_.
+
+## Does this work on its own repo?
+
+This repo uses its own standards, but its `metrics/findings-log.md` has to stay a blank template. So here, the record lives in GitHub issues instead, where every claim links to the issue and commit behind it:
+
+- **Every issue is labelled with what found it.** `found-by:<skill>` for a skill run, `found-by:ci`, `found-by:hooks`, `found-by:fixture`, or `found-by:review` for a human or AI review pass that wasn't a skill. [All found-by labels, with counts.](https://github.com/galiakr/ai-dev-toolkit/labels?q=found-by)
+- **The outcome is the issue's state.** Closed as completed means fixed, open means open, `wontfix` means it was noise or a false positive.
+- **Clean runs count too.** Each skill run on this repo, including ones that found nothing, is a comment on the pinned [Skill runs on this repo](https://github.com/galiakr/ai-dev-toolkit/issues?q=is%3Aissue+label%3Askill-runs) issue.
+- **Fixtures are the deliberate proof.** Each `fixtures/*/results-log.md` records real runs against planted problems, including the ones that caught real bugs in the toolkit itself (`fixtures/llm-review/README.md`, `fixtures/security-review/README.md`).
+
+For a summary, run `./scripts/toolkit-report.sh galiakr/ai-dev-toolkit`. An honest note on where it stands: tracking started in November 2026, and the first batch of issues came from a review pass (`found-by:review`), not from running a skill. The numbers will say more once skills have actually been run against this repo for a while.
 
 ## How to use it
 

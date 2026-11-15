@@ -156,7 +156,7 @@ git push --force-with-lease
 When asked to open and assign issues from another skill's findings:
 
 1. **Check for existing issues first** — search open and recently closed issues (`gh issue list --search "<keyword>"`) before creating new ones. If a finding is already tracked, add the appropriate label and a comment with the concrete repro/root cause/fix instead of opening a duplicate. Avoiding duplicate issues is part of the job, not an edge case.
-2. **Label consistently** — use labels that describe the finding's category (`bug`, `accessibility`, `tests`, `enhancement`), not just a generic `todo`.
+2. **Label consistently** — use labels that describe the finding's category (`bug`, `accessibility`, `tests`, `enhancement`), not just a generic `todo`. Also add a `found-by:<source>` label naming what produced the finding (`found-by:a11y`, `found-by:ci`, `found-by:review` for a review pass that wasn't a skill run), creating it with `gh label create` if it doesn't exist yet. That attribution is what lets the toolkit's `scripts/toolkit-report.sh` say which skills actually find things.
 3. **Assign to the requester** unless told otherwise.
 4. **Report a summary**, not just a list of numbers: how many were new vs. recognized as existing, and why — that judgment call is worth surfacing, not hiding inside a terse "done."
 
@@ -166,6 +166,12 @@ Append one row to `metrics/findings-log.md`: date, project, `github`, an
 outcome (`Action taken`), and one sentence covering how many issues were
 newly opened vs. recognized as already-tracked. The duplicate-avoidance
 count is worth keeping — it's evidence of judgment, not just throughput.
+
+If the project's `AGENTS.md` says findings are tracked as GitHub issues
+instead of in `metrics/findings-log.md` (or says that file must stay
+blank), don't write the row. Post the same sentence as a comment on the
+project's `skill-runs` tracking issue instead, and skip logging entirely
+only if neither exists — say so in the summary rather than silently.
 
 ---
 

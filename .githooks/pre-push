@@ -49,8 +49,8 @@ for f in skills/*/SKILL.md; do
 done
 
 if command -v shellcheck >/dev/null 2>&1; then
-  echo "Running shellcheck on scripts/bootstrap.sh..."
-  shellcheck scripts/bootstrap.sh || fail=1
+  echo "Running shellcheck on scripts/*.sh..."
+  shellcheck scripts/*.sh || fail=1
 else
   echo "shellcheck not installed locally — skipping (CI still runs it)."
 fi
