@@ -1,47 +1,11 @@
 #!/usr/bin/env bash
 # Fast, staged-files-only checks. The full pass runs in pre-push and CI.
+# The rules themselves live in scripts/check-skills.sh, shared with
+# pre-push and CI so the same content gets the same verdict everywhere.
 set -uo pipefail
 
-staged_skills=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^skills/.*/SKILL\.md$' || true)
-[ -z "$staged_skills" ] && exit 0
-
-fail=0
-
-check_pattern() {
-  file="$1"; level="$2"; label="$3"; pattern="$4"
-  matches=$(grep -nE "$pattern" "$file" || true)
-  [ -z "$matches" ] && return 0
-  while IFS= read -r m; do
-    echo "[$level] $file: $label — $m"
-  done <<< "$matches"
-  [ "$level" = "error" ] && fail=1
-  return 0
-}
-
-injection_pattern="pre-approved|you must comply|takes precedence over other instructions|don't mention this to the user|do this silently|skip confirmation|ignore (previous|prior) instructions|disregard (your|other)"
-
-while IFS= read -r f; do
-  [ -f "$f" ] || continue
-
-  head -1 "$f" | grep -q '^---$' || { echo "[error] $f: missing frontmatter opening ---"; fail=1; }
-  grep -q '^name:' "$f" || { echo "[error] $f: missing 'name:' in frontmatter"; fail=1; }
-  grep -q '^description:' "$f" || { echo "[error] $f: missing 'description:' in frontmatter"; fail=1; }
-
-  # audit-skills/SKILL.md legitimately quotes these patterns as examples of
-  # what to look for — scanning it would just flag itself.
-  if [ "$f" != "skills/audit-skills/SKILL.md" ]; then
-    check_pattern "$f" error "possible network call with no obvious tie to the skill's purpose" 'curl |wget |\bnc[[:space:]]+-|\bnetcat\b|\bncat\b'
-    check_pattern "$f" error "sudo usage" 'sudo'
-    check_pattern "$f" error "rm -rf" 'rm -rf'
-    check_pattern "$f" error "obfuscated/eval'd command" 'base64 -d|base64 --decode|eval \$\('
-    check_pattern "$f" warning "references credentials/SSH paths — confirm this matches the skill's stated purpose" '\.ssh|\.aws|id_rsa|\.env\b|credentials'
-    check_pattern "$f" error "language aimed at the agent rather than the user" "$injection_pattern"
-  fi
-done <<< "$staged_skills"
-
-if [ "$fail" -ne 0 ]; then
+if ! ./scripts/check-skills.sh --staged; then
   echo ""
   echo "pre-commit found issues in staged SKILL.md files above. Fix them — never skip this with --no-verify."
+  exit 1
 fi
-
-exit $fail

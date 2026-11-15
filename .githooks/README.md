@@ -21,18 +21,20 @@ run it for you. Run it once after cloning.
 
 ## pre-commit
 
-Runs against staged `SKILL.md` files only: frontmatter check, dangerous
-command patterns, prompt-injection-style phrasing. Fast, mirrors the
-`audit-skill-security` CI job scoped to what you're about to commit.
+Runs `scripts/check-skills.sh --staged`: the staged content (not your
+working-tree copy) of staged `SKILL.md` files only — frontmatter, dangerous
+command patterns, prompt-injection-style phrasing. Fast, and the same rules
+the CI jobs run, because they all call that one script.
 
 ## pre-push
 
-The slower, full pass: every skill file (not just staged), the orphan and
-README-doc-sync checks, and — if the tool is installed locally —
-`shellcheck` on `scripts/bootstrap.sh`, `actionlint` on
-`git/workflows/*.yml`, and `gitleaks`. Missing tools are skipped locally
-with a note; CI still runs all of them, so nothing silently goes
-unchecked.
+The slower, full pass: `scripts/check-skills.sh` across every skill (plus
+the orphan, README-doc-sync, and template-parity checks),
+`scripts/test-bootstrap.sh`, `fixtures/skillspector/test-ci-loop.sh`, and —
+if the tool is installed locally — `shellcheck` on `scripts/*.sh` and both
+hooks, `actionlint` on `git/workflows/*.yml`, and `gitleaks`. Missing tools
+are skipped locally with a note; CI still runs all of them, so nothing
+silently goes unchecked.
 
 ## Rule
 

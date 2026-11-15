@@ -46,10 +46,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Shellcheck scripts/
-        uses: ludeeus/action-shellcheck@master
-        with:
-          scandir: './scripts'
+      # shellcheck is preinstalled on ubuntu-latest — no third-party action
+      # (or mutable @master ref) needed. Same file list as .githooks/pre-push;
+      # the hooks have no .sh extension, so they're named explicitly.
+      - name: Shellcheck scripts and hooks
+        run: shellcheck scripts/*.sh .githooks/pre-commit .githooks/pre-push fixtures/skillspector/test-ci-loop.sh
 
       # Shellcheck can't tell whether bootstrap.sh copies the right files or
       # preserves a project's existing ones on rerun — this actually runs it
@@ -67,34 +68,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Every skill has valid frontmatter
-        run: |
-          fail=0
-          for f in skills/*/SKILL.md; do
-            [ -f "$f" ] || continue
-            head -1 "$f" | grep -q '^---$' || { echo "::error file=$f::Missing frontmatter opening ---"; fail=1; }
-            grep -q '^name:' "$f" || { echo "::error file=$f::Missing 'name:' in frontmatter"; fail=1; }
-            grep -q '^description:' "$f" || { echo "::error file=$f::Missing 'description:' in frontmatter"; fail=1; }
-          done
-          exit $fail
-
-      - name: No orphaned flat skill files from the old structure
-        run: |
-          orphans=$(find skills -maxdepth 1 -name "skill-*.md" -type f 2>/dev/null || true)
-          if [ -n "$orphans" ]; then
-            echo "::error::Found orphaned flat skill files (should be skills/<name>/SKILL.md):"
-            echo "$orphans"
-            exit 1
-          fi
-
-      - name: Every skill folder is documented in README
-        run: |
-          missing=0
-          for dir in skills/*/; do
-            name=$(basename "$dir")
-            grep -q "\`$name\`" README.md || { echo "::warning::Skill '$name' exists but isn't documented in README.md"; missing=1; }
-          done
-          exit 0   # warning only — doesn't fail the build, just flags it
+      # Rules live in scripts/check-skills.sh, shared with .githooks/ so the
+      # same content gets the same verdict locally and here. "structure":
+      # frontmatter, orphaned flat files, README documentation (warning).
+      - name: Skill structure
+        run: ./scripts/check-skills.sh --gha --only structure
 
   audit-skill-security:
     # Mechanical subset of the audit-skills skill (dangerous command
@@ -107,55 +85,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Scan skills for dangerous command patterns
-        run: |
-          fail=0
-          check() {
-            file="$1"; level="$2"; label="$3"; pattern="$4"
-            matches=$(grep -nE "$pattern" "$file" || true)
-            [ -z "$matches" ] && return 0
-            while IFS= read -r m; do
-              echo "::$level file=$file::$label — $m"
-            done <<< "$matches"
-            [ "$level" = "error" ] && fail=1
-            return 0
-          }
-          for f in skills/*/SKILL.md; do
-            [ -f "$f" ] || continue
-            # audit-skills/SKILL.md legitimately quotes these patterns as
-            # examples of what to look for — scanning it would just flag itself.
-            [ "$f" = "skills/audit-skills/SKILL.md" ] && continue
-
-            check "$f" error "Possible network call with no obvious tie to the skill's purpose" 'curl |wget |\bnc[[:space:]]+-|\bnetcat\b|\bncat\b'
-            check "$f" error "sudo usage" 'sudo'
-            check "$f" error "rm -rf" 'rm -rf'
-            check "$f" error "Obfuscated/eval'd command" 'base64 -d|base64 --decode|eval \$\('
-            # Credentials/SSH-path references need context to judge (a
-            # security-review-style skill legitimately reads .env) — warn,
-            # don't fail.
-            check "$f" warning "References credentials/SSH paths — confirm this matches the skill's stated purpose" '\.ssh|\.aws|id_rsa|\.env\b|credentials'
-          done
-          exit $fail
-
-      - name: Scan skills for prompt-injection-style phrasing
-        run: |
-          fail=0
-          check() {
-            file="$1"; pattern="$2"
-            matches=$(grep -niE "$pattern" "$file" || true)
-            [ -z "$matches" ] && return 0
-            while IFS= read -r m; do
-              echo "::error file=$file::Language aimed at the agent rather than the user — $m"
-            done <<< "$matches"
-            fail=1
-            return 0
-          }
-          for f in skills/*/SKILL.md; do
-            [ -f "$f" ] || continue
-            [ "$f" = "skills/audit-skills/SKILL.md" ] && continue
-            check "$f" 'pre-approved|you must comply|takes precedence over other instructions|don'"'"'t mention this to the user|do this silently|skip confirmation|ignore (previous|prior) instructions|disregard (your|other)'
-          done
-          exit $fail
+      # Same shared script, "security" group: command patterns, injection
+      # phrasing (case-insensitive), and a parity check that the shipped
+      # git/workflows/ci.yml template still carries every pattern.
+      - name: Scan skills for dangerous commands and injection phrasing
+        run: ./scripts/check-skills.sh --gha --only security
 
   skillspector-scan:
     # NVIDIA SkillSpector (https://github.com/NVIDIA/SkillSpector) — a

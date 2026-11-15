@@ -4,53 +4,16 @@ set -uo pipefail
 
 fail=0
 
-check_pattern() {
-  file="$1"; level="$2"; label="$3"; pattern="$4"
-  matches=$(grep -nE "$pattern" "$file" || true)
-  [ -z "$matches" ] && return 0
-  while IFS= read -r m; do
-    echo "[$level] $file: $label — $m"
-  done <<< "$matches"
-  [ "$level" = "error" ] && fail=1
-  return 0
-}
+# Same file list as CI's validate-shell-scripts job. The hooks have no .sh
+# extension, so they're named explicitly.
+shell_files=(scripts/*.sh .githooks/pre-commit .githooks/pre-push fixtures/skillspector/test-ci-loop.sh)
 
-echo "Checking skill frontmatter and orphans..."
-for f in skills/*/SKILL.md; do
-  [ -f "$f" ] || continue
-  head -1 "$f" | grep -q '^---$' || { echo "[error] $f: missing frontmatter opening ---"; fail=1; }
-  grep -q '^name:' "$f" || { echo "[error] $f: missing 'name:' in frontmatter"; fail=1; }
-  grep -q '^description:' "$f" || { echo "[error] $f: missing 'description:' in frontmatter"; fail=1; }
-done
-
-orphans=$(find skills -maxdepth 1 -name "skill-*.md" -type f 2>/dev/null || true)
-if [ -n "$orphans" ]; then
-  echo "[error] orphaned flat skill files found (should be skills/<name>/SKILL.md):"
-  echo "$orphans"
-  fail=1
-fi
-
-for dir in skills/*/; do
-  name=$(basename "$dir")
-  grep -q "\`$name\`" README.md || echo "[warning] skill '$name' exists but isn't documented in README.md"
-done
-
-echo "Scanning skills for dangerous command patterns and injection-style phrasing..."
-injection_pattern="pre-approved|you must comply|takes precedence over other instructions|don't mention this to the user|do this silently|skip confirmation|ignore (previous|prior) instructions|disregard (your|other)"
-for f in skills/*/SKILL.md; do
-  [ -f "$f" ] || continue
-  [ "$f" = "skills/audit-skills/SKILL.md" ] && continue
-  check_pattern "$f" error "possible network call with no obvious tie to the skill's purpose" 'curl |wget |\bnc[[:space:]]+-|\bnetcat\b|\bncat\b'
-  check_pattern "$f" error "sudo usage" 'sudo'
-  check_pattern "$f" error "rm -rf" 'rm -rf'
-  check_pattern "$f" error "obfuscated/eval'd command" 'base64 -d|base64 --decode|eval \$\('
-  check_pattern "$f" warning "references credentials/SSH paths — confirm this matches the skill's stated purpose" '\.ssh|\.aws|id_rsa|\.env\b|credentials'
-  check_pattern "$f" error "language aimed at the agent rather than the user" "$injection_pattern"
-done
+echo "Checking skills (structure + security patterns, shared with CI)..."
+./scripts/check-skills.sh || fail=1
 
 if command -v shellcheck >/dev/null 2>&1; then
-  echo "Running shellcheck on scripts/*.sh..."
-  shellcheck scripts/*.sh || fail=1
+  echo "Running shellcheck on scripts and hooks..."
+  shellcheck "${shell_files[@]}" || fail=1
 else
   echo "shellcheck not installed locally — skipping (CI still runs it)."
 fi
@@ -58,6 +21,12 @@ fi
 echo "Running bootstrap smoke checks..."
 if ! ./scripts/test-bootstrap.sh >/dev/null; then
   echo "[error] scripts/test-bootstrap.sh failed — run it directly to see which check."
+  fail=1
+fi
+
+echo "Running SkillSpector CI loop regression check..."
+if ! ./fixtures/skillspector/test-ci-loop.sh >/dev/null; then
+  echo "[error] fixtures/skillspector/test-ci-loop.sh failed — run it directly to see which check."
   fail=1
 fi
 

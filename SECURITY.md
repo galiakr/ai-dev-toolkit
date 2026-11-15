@@ -50,7 +50,14 @@ on why plain scripts instead of Husky here specifically.
 
 **Trigger:** every `git commit`, before it's created.
 
-**What it does:** looks only at `SKILL.md` files that are actually staged
+**What it does:** runs `scripts/check-skills.sh --staged` — the same
+script both skill CI jobs and `pre-push` call, so there's one copy of the
+rules and the same content gets the same verdict everywhere (before this,
+the hooks matched injection phrasing case-sensitively while CI didn't, so
+"Skip confirmation" passed locally and failed after push). It reads the
+*staged* content from git's index, not the working-tree file, so an
+unstaged edit can't hide a bad staged one. It looks only at `SKILL.md`
+files that are actually staged
 in this commit — not the whole repo, so it stays fast enough to never be
 worth skipping. For each staged skill file it checks:
 
@@ -82,7 +89,11 @@ application code.
   that shouldn't exist anymore).
 - The README-documentation-sync check (every skill folder should have a
   matching entry in `README.md`).
-- `shellcheck` on `scripts/*.sh`, `actionlint` on
+- A parity check that the shipped `git/workflows/ci.yml` and
+  `prompt-injection-guard.yml` templates still carry the same patterns —
+  they can't call the script, since it isn't copied into adopting projects.
+- `fixtures/skillspector/test-ci-loop.sh`, always.
+- `shellcheck` on `scripts/*.sh` and both hooks, `actionlint` on
   `git/workflows/*.yml`, and `gitleaks` — **if you have them installed
   locally.** If you don't, it says so and moves on; it doesn't fail
   silently, and CI runs all three regardless of what's on your machine.
@@ -95,9 +106,11 @@ anything becomes visible to anyone else.
 
 > **The canonical injection-phrasing pattern**, referenced by name
 > throughout this doc, is one fixed list maintained in exactly one place
-> conceptually (though it appears in three files that must be kept in
-> sync by hand — `skills/audit-skills/SKILL.md` step 3, the
-> `audit-skill-security` CI job below, and `git/workflows/prompt-injection-guard.yml`):
+> conceptually. Its source of truth is `scripts/check-skills.sh`; the
+> shipped `git/workflows/ci.yml` and `git/workflows/prompt-injection-guard.yml`
+> carry inline copies that `check-skills.sh` verifies on every push, and
+> `skills/audit-skills/SKILL.md` step 3 lists the same phrases as prose,
+> still kept in sync by hand:
 > `pre-approved`, `you must comply`, `takes precedence over other
 instructions`, `don't mention this to the user`, `do this silently`,
 > `skip confirmation`, `ignore previous/prior instructions`, `disregard
@@ -142,7 +155,9 @@ fails.
 
 ### `validate-shell-scripts`
 
-`shellcheck` against `scripts/` — mainly for `bootstrap.sh`, the one
+`shellcheck` against `scripts/` and both `.githooks/` (named explicitly —
+they have no `.sh` extension, and nothing checked them before) — mainly
+for `bootstrap.sh`, the one
 script every adopting project actually runs, unattended, in their first
 five minutes with this repo. A cryptic shell bug here is a uniquely bad
 first impression; this job exists specifically because of that stake, not
@@ -159,7 +174,8 @@ documented `./scripts/bootstrap.sh` invocation failed on a fresh clone.
 
 ### `validate-skills`
 
-Three checks, none of which need an external tool:
+Runs `scripts/check-skills.sh --only structure`. Three checks, none of
+which need an external tool:
 
 1. Every `skills/*/SKILL.md` has valid frontmatter (`name:`,
    `description:`).
@@ -171,6 +187,8 @@ Three checks, none of which need an external tool:
 
 ### `audit-skill-security`
 
+Runs `scripts/check-skills.sh --only security`, the same rules
+`pre-commit` and `pre-push` apply, plus the template-parity check.
 The mechanical half of the `audit-skills` skill (steps 2 and 3 — dangerous
 command patterns and injection phrasing), run automatically against every
 real `skills/*/SKILL.md` on every push, with `skills/audit-skills/SKILL.md`

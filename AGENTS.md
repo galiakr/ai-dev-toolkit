@@ -155,10 +155,12 @@ git config core.hooksPath .githooks   # one-time, per clone — see .githooks/RE
 chmod +x .githooks/pre-commit .githooks/pre-push
 ```
 
-`pre-commit` checks staged `SKILL.md` files (frontmatter, dangerous
-command patterns, injection-style phrasing). `pre-push` runs the full
-pass across all skills, plus `shellcheck`/`actionlint`/`gitleaks` if
-they're installed locally (CI runs all three regardless).
+Skill rules live in one place, `scripts/check-skills.sh`, which both
+hooks and both skill CI jobs call — change a rule there, not in a hook or
+in `ci.yml`. `pre-commit` checks the staged content of staged `SKILL.md`
+files. `pre-push` runs the full pass across all skills plus the bootstrap
+and CI-loop tests, and `shellcheck`/`actionlint`/`gitleaks` if they're
+installed locally (CI runs all three regardless).
 
 ## Testing
 
