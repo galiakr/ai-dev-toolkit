@@ -30,9 +30,16 @@ import argparse
 import csv
 import json
 import os
+import re
 import sys
 
 RESERVED = {"key", "description"}
+
+# Language column headers become output filenames (<header>.json), so they
+# must look like a locale code — en, es, pt-BR, zh-Hant, sr_Latn_RS — and
+# nothing else. Anything with a path separator or "..", or just a typo like
+# "english ", is rejected before a single file is written.
+LOCALE_RE = re.compile(r"^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*$")
 
 
 def csv_to_json(csv_path, out_dir):
@@ -46,6 +53,7 @@ def csv_to_json(csv_path, out_dir):
         languages = [c for c in fields if c and c not in RESERVED]
         if not languages:
             sys.exit("error: CSV has no language columns (need at least one, e.g. 'en').")
+        _validate_languages(languages)
 
         rows = []
         seen = set()
@@ -83,8 +91,12 @@ def csv_to_json(csv_path, out_dir):
             _set_nested(trees[lang], key, value)
 
     os.makedirs(out_dir, exist_ok=True)
+    out_real = os.path.realpath(out_dir)
     for lang in languages:
         path = os.path.join(out_dir, f"{lang}.json")
+        # Backstop for _validate_languages: never write outside out_dir.
+        if os.path.dirname(os.path.realpath(path)) != out_real:
+            sys.exit(f"error: refusing to write {path!r} outside {out_dir!r}.")
         with open(path, "w", encoding="utf-8") as f:
             json.dump(trees[lang], f, ensure_ascii=False, indent=2, sort_keys=True)
             f.write("\n")
@@ -132,6 +144,23 @@ def json_to_csv(in_dir, csv_path):
                 + [table[key].get(lang, "") for lang in languages]
             )
     print(f"wrote {csv_path} ({len(table)} tokens, {len(languages)} language(s)).")
+
+
+def _validate_languages(languages):
+    """Exit (before anything is written) if any language header is unsafe or duplicated."""
+    problems = []
+    for lang in languages:
+        if not LOCALE_RE.match(lang):
+            problems.append(f"'{lang}' isn't a language code (expected e.g. en, es, pt-BR, zh-Hant)")
+    seen = set()
+    for lang in languages:
+        if lang.lower() in seen:
+            problems.append(f"'{lang}' appears more than once (one column per language)")
+        seen.add(lang.lower())
+    if problems:
+        for p in problems:
+            print(f"error: language column {p}.", file=sys.stderr)
+        sys.exit(f"error: {len(problems)} bad language column header(s). Nothing was written.")
 
 
 def _group_collisions(keys):
