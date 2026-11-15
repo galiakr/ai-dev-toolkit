@@ -47,28 +47,40 @@ def csv_to_json(csv_path, out_dir):
         if not languages:
             sys.exit("error: CSV has no language columns (need at least one, e.g. 'en').")
 
-        # lang -> nested dict
-        trees = {lang: {} for lang in languages}
-        missing = {lang: [] for lang in languages}
+        rows = []
         seen = set()
-        rows = 0
-
         for raw in reader:
             row = {(k.strip() if k else k): (v if v is not None else "") for k, v in raw.items()}
             key = (row.get("key") or "").strip()
             if not key:
                 continue
-            rows += 1
             if key in seen:
                 print(f"warning: duplicate key '{key}' — later row wins.")
             seen.add(key)
-            for lang in languages:
-                value = (row.get(lang) or "").strip()
-                if value == "" or value.upper() == "TODO":
-                    missing[lang].append(key)
-                    if value == "":
-                        continue
-                _set_nested(trees[lang], key, value)
+            rows.append((key, row))
+
+    # Check the whole key set before building anything, so the result
+    # doesn't depend on row order: 'a' + 'a.b' would otherwise either fail
+    # or silently drop 'a.b', depending on which row came first.
+    collisions = _group_collisions(seen)
+    if collisions:
+        for parent, child in collisions:
+            print(f"error: '{parent}' is used both as a value and as a group "
+                  f"(it's also the start of '{child}').", file=sys.stderr)
+        sys.exit(f"error: {len(collisions)} key collision(s); rename one side of each "
+                 f"(e.g. '{collisions[0][0]}' -> '{collisions[0][0]}.label'). Nothing was written.")
+
+    # lang -> nested dict
+    trees = {lang: {} for lang in languages}
+    missing = {lang: [] for lang in languages}
+    for key, row in rows:
+        for lang in languages:
+            value = (row.get(lang) or "").strip()
+            if value == "" or value.upper() == "TODO":
+                missing[lang].append(key)
+                if value == "":
+                    continue
+            _set_nested(trees[lang], key, value)
 
     os.makedirs(out_dir, exist_ok=True)
     for lang in languages:
@@ -78,7 +90,7 @@ def csv_to_json(csv_path, out_dir):
             f.write("\n")
         print(f"wrote {path}")
 
-    print(f"\n{rows} tokens across {len(languages)} language(s).")
+    print(f"\n{len(seen)} tokens across {len(languages)} language(s).")
     for lang in languages:
         if missing[lang]:
             print(f"  {lang}: {len(missing[lang])} missing/TODO -> "
@@ -122,6 +134,18 @@ def json_to_csv(in_dir, csv_path):
     print(f"wrote {csv_path} ({len(table)} tokens, {len(languages)} language(s)).")
 
 
+def _group_collisions(keys):
+    """(parent, child) pairs where 'parent' is a key and also a group prefix of 'child'."""
+    found = []
+    for key in sorted(keys):
+        parts = key.split(".")
+        for i in range(1, len(parts)):
+            prefix = ".".join(parts[:i])
+            if prefix in keys:
+                found.append((prefix, key))
+    return found
+
+
 def _set_nested(tree, dotted_key, value):
     parts = dotted_key.split(".")
     node = tree
@@ -130,6 +154,10 @@ def _set_nested(tree, dotted_key, value):
         if not isinstance(node, dict):
             sys.exit(f"error: key collision at '{part}' in '{dotted_key}' "
                      f"(a key is used both as a value and as a group).")
+    if isinstance(node.get(parts[-1]), dict):
+        # Backstop: _group_collisions should already have caught this.
+        sys.exit(f"error: key collision at '{dotted_key}' "
+                 f"(a key is used both as a value and as a group).")
     node[parts[-1]] = value
 
 
